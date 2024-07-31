@@ -1,0 +1,24 @@
+{
+  "name": "rank-rizz",
+  "packageManager": "pnpm@8.15.8",
+  "scripts": {
+    "dev": "nuxi dev",
+    "build": "nuxi build",
+    "start": "nuxi start",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "^1.3.3",
+    "@nuxt/eslint": "^0.3.13",
+    "@nuxt/eslint-config": "^0.3.13",
+    "@nuxthub/core": "^0.6.17",
+    "@types/node": "^20.14.3",
+    "autoprefixer": "^10.4.19",
+    "eslint": "^9.5.0",
+    "nuxt": "^3.12.2",
+    "postcss": "^8.4.40",
+    "postcss-nesting": "^12.1.5",
+    "tailwindcss": "^3.4.7",
+    "typescript": "^5.4.5"
+  }
+}
