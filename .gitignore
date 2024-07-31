@@ -15,3 +15,5 @@ public/sw.js
 public/workbox-sw*.js*
 
 .data
+assests/users.debug
+.wrangler

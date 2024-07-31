@@ -1,9 +1,8 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
-    <section class="bg-dark-blue py-10 text-center">
-        <div class="max-w-3xl mx-auto">
-            
-        </div>
-    </section>
+  <section class="bg-dark-blue py-10 text-center">
+    <div class="max-w-3xl mx-auto" />
+  </section>
 </template>
 
 <style scoped>
