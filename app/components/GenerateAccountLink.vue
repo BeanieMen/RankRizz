@@ -67,5 +67,4 @@ const submitForm = async () => {
     errorMessage.value = 'There was a problem with the fetch operation'
   }
 }
-// 4206849885324914009
 </script>

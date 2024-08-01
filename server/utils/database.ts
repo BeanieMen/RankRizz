@@ -103,7 +103,7 @@ export function updateUsername(db: sqlite3.Database, username: string, passKey: 
       if (err) {
         console.error('Error updating user:', err)
         if (err.message.includes('UNIQUE constraint failed')) {
-          resolve(false) // Handle username or passkey collision
+          resolve(false)
         }
         else {
           reject(err)
