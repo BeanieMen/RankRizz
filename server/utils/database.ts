@@ -6,6 +6,8 @@ interface User {
   pass_key: string
 }
 
+export const generateRandomString = () => [...Array(20)].map(() => Math.random().toString(36)[2]).join('')
+
 export function initializeDb() {
   const db = new sqlite3.Database('assets/users.db')
 
@@ -13,9 +15,9 @@ export function initializeDb() {
     db.run(
       `
       CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY,
+        id TEXT PRIMARY KEY,
         username TEXT UNIQUE,
-        pass_key INTEGER NOT NULL UNIQUE
+        pass_key TEXT NOT NULL UNIQUE
       )
     `,
       (err) => {
@@ -31,7 +33,7 @@ export function initializeDb() {
 
 export function createUser(db: sqlite3.Database, username: string, passKey: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    const id = BigInt(`0b${[...Array(64)].map(() => Math.random() > 0.5 ? '1' : '0').join('')}`).toString()
+    const id = generateRandomString()
     const query = `
       INSERT INTO users (id, username, pass_key)
       VALUES (?, ?, ?)
@@ -48,7 +50,7 @@ export function createUser(db: sqlite3.Database, username: string, passKey: stri
         }
       }
       else {
-        console.log(`User ${username} created successfully. with pass: ${passKey}`)
+        console.log(`User ${username} created successfully with pass: ${passKey}`)
         resolve(true)
       }
     })

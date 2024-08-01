@@ -1,4 +1,4 @@
-import { initializeDb, createUser } from '../utils/database'
+import { initializeDb, createUser, generateRandomString } from '../utils/database'
 
 export default defineEventHandler(async (event) => {
   const db = initializeDb()
@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
     const username = body.username
 
     if (username) {
-      const passKey = BigInt(`0b${[...Array(64)].map(() => Math.random() > 0.5 ? '1' : '0').join('')}`).toString()
+      const passKey = generateRandomString()
       const success = await createUser(db, username, passKey)
       db.close()
       if (success) {
