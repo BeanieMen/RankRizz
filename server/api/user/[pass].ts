@@ -1,10 +1,10 @@
-import { initializeDb, getUser } from '../../utils/database'
+import { initializeDb, getUserByPasskey } from '../../utils/database'
 
 export default defineEventHandler(async (event) => {
   const db = initializeDb()
   if (event.method === 'GET') {
-    const id = getRouterParam(event, 'id') || ''
-    const user = await getUser(db, id)
+    const pass = getRouterParam(event, 'pass') || ''
+    const user = await getUserByPasskey(db, pass)
     db.close()
 
     if (user) {

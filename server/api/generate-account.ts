@@ -1,5 +1,4 @@
-import crypto from 'crypto'
-import { initializeDb, upsertUser } from '../utils/database'
+import { initializeDb, createUser } from '../utils/database'
 
 export default defineEventHandler(async (event) => {
   const db = initializeDb()
@@ -8,11 +7,11 @@ export default defineEventHandler(async (event) => {
     const username = body.username
 
     if (username) {
-      const userId = BigInt(`0x${crypto.randomBytes(8).toString('hex')}`).toString()
-      const success = await upsertUser(db, username, userId)
+      const passKey = BigInt(`0b${[...Array(64)].map(() => Math.random() > 0.5 ? '1' : '0').join('')}`).toString()
+      const success = await createUser(db, username, passKey)
       db.close()
       if (success) {
-        return { id: userId.toString(), username: username }
+        return { passKey: passKey, username: username }
       }
       else {
         return { error: 'Username is already taken' }

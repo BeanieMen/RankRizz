@@ -1,5 +1,11 @@
 import sqlite3 from 'sqlite3'
 
+interface User {
+  id: string
+  username: string
+  pass_key: string
+}
+
 export function initializeDb() {
   const db = new sqlite3.Database('assets/users.db')
 
@@ -7,9 +13,9 @@ export function initializeDb() {
     db.run(
       `
       CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INTEGER PRIMARY KEY,
         username TEXT UNIQUE,
-        user_id INTEGER NOT NULL UNIQUE
+        pass_key INTEGER NOT NULL UNIQUE
       )
     `,
       (err) => {
@@ -19,31 +25,21 @@ export function initializeDb() {
       },
     )
   })
+
   return db
 }
 
-interface User {
-  id: number
-  username: string
-  user_id: string
-}
-
-export function upsertUser(
-  db: sqlite3.Database,
-  username: string | null,
-  userId: string,
-): Promise<boolean> {
+export function createUser(db: sqlite3.Database, username: string, passKey: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
+    const id = BigInt(`0b${[...Array(64)].map(() => Math.random() > 0.5 ? '1' : '0').join('')}`).toString()
     const query = `
-      INSERT INTO users (username, user_id)
-      VALUES (?, ?)
-      ON CONFLICT(user_id) DO UPDATE SET
-        username=excluded.username
+      INSERT INTO users (id, username, pass_key)
+      VALUES (?, ?, ?)
     `
 
-    db.run(query, [username, userId], function (err) {
+    db.run(query, [id, username, passKey], function (err) {
       if (err) {
-        console.error('Error upserting user:', err)
+        console.error('Error creating user:', err)
         if (err.message.includes('UNIQUE constraint failed')) {
           resolve(false)
         }
@@ -52,29 +48,70 @@ export function upsertUser(
         }
       }
       else {
-        console.log(
-          `User ${username} with ID ${userId} upserted successfully.`,
-        )
+        console.log(`User ${username} created successfully. with pass: ${passKey}`)
         resolve(true)
       }
     })
   })
 }
 
-export function getUser(
-  db: sqlite3.Database,
-  userId: string,
-): Promise<User | null> {
+export function getUserByUsername(db: sqlite3.Database, username: string): Promise<User | null> {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM users WHERE user_id = ?`
+    const query = `
+      SELECT * FROM users WHERE username = ?
+    `
 
-    db.get(query, [userId], (err, row) => {
+    db.get(query, [username], (err, row) => {
       if (err) {
         console.error('Error fetching user:', err)
         reject(err)
       }
       else {
         resolve(row ? (row as User) : null)
+      }
+    })
+  })
+}
+
+export function getUserByPasskey(db: sqlite3.Database, passKey: string): Promise<User | null> {
+  return new Promise((resolve, reject) => {
+    const query = `
+      SELECT * FROM users WHERE pass_key = ?
+    `
+
+    db.get(query, [passKey], (err, row) => {
+      if (err) {
+        console.error('Error fetching user:', err)
+        reject(err)
+      }
+      else {
+        resolve(row ? (row as User) : null)
+      }
+    })
+  })
+}
+
+export function updateUsername(db: sqlite3.Database, username: string, passKey: string): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    const query = `
+      UPDATE users
+      SET username = ?
+      WHERE pass_key = ?
+    `
+
+    db.run(query, [username, passKey], function (err) {
+      if (err) {
+        console.error('Error updating user:', err)
+        if (err.message.includes('UNIQUE constraint failed')) {
+          resolve(false) // Handle username or passkey collision
+        }
+        else {
+          reject(err)
+        }
+      }
+      else {
+        console.log(`User ${username} updated successfully.`)
+        resolve(true)
       }
     })
   })

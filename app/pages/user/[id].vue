@@ -4,7 +4,7 @@
       <div class="space-y-4 text-black">
         <p>ID: <span class="font-bold">{{ data.id }}</span></p>
         <p>Username: <span class="font-bold">{{ data.username }}</span></p>
-        <p>User ID: <span class="font-bold">{{ data.user_id }}</span></p>
+        <p>Pass Key: <span class="font-bold">{{ data.pass_key }}</span></p>
       </div>
     </div>
   </div>
@@ -16,7 +16,7 @@ import { useRoute } from 'vue-router'
 
 const route = useRoute()
 
-const data = ref({ id: null, username: null, user_id: null })
+const data = ref({ id: null, username: null, pass_key: null })
 const loading = ref(true)
 
 onMounted(async () => {
