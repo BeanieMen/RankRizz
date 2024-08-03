@@ -26,6 +26,17 @@
       >
         {{ errorMessage }}
       </p>
+      <p
+        v-if="successMessage"
+        class="mt-4 text-green-500 font-bold"
+      >
+        <a
+          :href="successLink"
+          class="text-green-500 hover:underline"
+        >
+          {{ successMessage }}
+        </a>
+      </p>
     </form>
   </div>
 </template>
@@ -35,9 +46,13 @@ import { ref } from 'vue'
 
 const username = ref('')
 const errorMessage = ref('')
+const successMessage = ref('')
+const successLink = ref('')
 
 const submitForm = async () => {
   errorMessage.value = ''
+  successMessage.value = ''
+  successLink.value = ''
 
   try {
     const response = await fetch('/api/generate-account', {
@@ -55,10 +70,13 @@ const submitForm = async () => {
     }
 
     const data = await response.json()
+
     if (data.error) {
       errorMessage.value = data.error
     }
     else {
+      successMessage.value = 'Account generated successfully! View your account details here and please store the given link somewhere safe'
+      successLink.value = `/user/${data.passKey}`
       username.value = ''
     }
   }

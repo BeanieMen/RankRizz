@@ -15,5 +15,6 @@ public/sw.js
 public/workbox-sw*.js*
 
 .data
-assests/users.debug
+assests/users.db
 .wrangler
+public/user-photos

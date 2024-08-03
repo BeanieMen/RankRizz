@@ -5,13 +5,14 @@ export default defineEventHandler(async (event) => {
   if (event.method === 'GET') {
     const pass = getRouterParam(event, 'pass') || ''
     const user = await getUserByPasskey(db, pass)
-    db.close()
 
     if (user) {
+      db.close()
       return { user: user }
     }
     else {
-      return { user: null }
+      db.close()
+      return { user: null, image: null }
     }
   }
 })

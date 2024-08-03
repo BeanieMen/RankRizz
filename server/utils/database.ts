@@ -1,9 +1,10 @@
 import sqlite3 from 'sqlite3'
 
-interface User {
+export interface User {
   id: string
   username: string
   pass_key: string
+  image_location: string
 }
 
 export const generateRandomString = () => [...Array(20)].map(() => Math.random().toString(36)[2]).join('')
@@ -15,9 +16,10 @@ export function initializeDb() {
     db.run(
       `
       CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
+        id TEXT PRIMARY KEY UNIQUE,
         username TEXT UNIQUE,
-        pass_key TEXT NOT NULL UNIQUE
+        pass_key TEXT NOT NULL UNIQUE,
+        image_location TEXT
       )
     `,
       (err) => {
@@ -63,13 +65,13 @@ export function getUserByUsername(db: sqlite3.Database, username: string): Promi
       SELECT * FROM users WHERE username = ?
     `
 
-    db.get(query, [username], (err, row) => {
+    db.get(query, [username], (err, row: User) => {
       if (err) {
         console.error('Error fetching user:', err)
         reject(err)
       }
       else {
-        resolve(row ? (row as User) : null)
+        resolve(row)
       }
     })
   })
@@ -81,13 +83,13 @@ export function getUserByPasskey(db: sqlite3.Database, passKey: string): Promise
       SELECT * FROM users WHERE pass_key = ?
     `
 
-    db.get(query, [passKey], (err, row) => {
+    db.get(query, [passKey], (err, row: User) => {
       if (err) {
         console.error('Error fetching user:', err)
         reject(err)
       }
       else {
-        resolve(row ? (row as User) : null)
+        resolve(row)
       }
     })
   })
@@ -113,6 +115,52 @@ export function updateUsername(db: sqlite3.Database, username: string, passKey: 
       }
       else {
         console.log(`User ${username} updated successfully.`)
+        resolve(true)
+      }
+    })
+  })
+}
+
+export function getImageLocation(db: sqlite3.Database, passKey: string): Promise<string | null> {
+  return new Promise((resolve, reject) => {
+    const query = `
+      SELECT image_location FROM users WHERE pass_key = ?
+    `
+
+    db.get(query, [passKey], (err, row: User) => {
+      if (err) {
+        console.error('Error fetching image location:', err)
+        reject(err)
+      }
+      else {
+        resolve(row.image_location)
+      }
+    })
+  })
+}
+
+export function upsertImageLocation(
+  db: sqlite3.Database,
+  id: string,
+  imageLocation: string,
+): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    const query = `
+      UPDATE users
+      SET image_location = ?
+      WHERE id = ?
+    `
+
+    db.run(query, [imageLocation, id], function (err) {
+      if (err) {
+        console.error('Error updating image location:', err)
+        reject(err)
+      }
+      else if (this.changes === 0) {
+        resolve(false)
+      }
+      else {
+        console.log(`Image location updated successfully for id ${id}.`)
         resolve(true)
       }
     })
