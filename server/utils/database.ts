@@ -7,7 +7,8 @@ export interface User {
   image_location: string
 }
 
-export const generateRandomString = () => [...Array(20)].map(() => Math.random().toString(36)[2]).join('')
+export const generateRandomString = () =>
+  [...Array(20)].map(() => Math.random().toString(36)[2]).join('')
 
 export function initializeDb() {
   const db = new sqlite3.Database('assets/users.db')
@@ -33,7 +34,11 @@ export function initializeDb() {
   return db
 }
 
-export function createUser(db: sqlite3.Database, username: string, passKey: string): Promise<boolean> {
+export function createUser(
+  db: sqlite3.Database,
+  username: string,
+  passKey: string,
+): Promise<boolean> {
   return new Promise((resolve, reject) => {
     const id = generateRandomString()
     const query = `
@@ -52,14 +57,19 @@ export function createUser(db: sqlite3.Database, username: string, passKey: stri
         }
       }
       else {
-        console.log(`User ${username} created successfully with pass: ${passKey}`)
+        console.log(
+          `User ${username} created successfully with pass: ${passKey}`,
+        )
         resolve(true)
       }
     })
   })
 }
 
-export function getUserByUsername(db: sqlite3.Database, username: string): Promise<User | null> {
+export function getUserByUsername(
+  db: sqlite3.Database,
+  username: string,
+): Promise<User | null> {
   return new Promise((resolve, reject) => {
     const query = `
       SELECT * FROM users WHERE username = ?
@@ -77,7 +87,10 @@ export function getUserByUsername(db: sqlite3.Database, username: string): Promi
   })
 }
 
-export function getUserByPasskey(db: sqlite3.Database, passKey: string): Promise<User | null> {
+export function getUserByPasskey(
+  db: sqlite3.Database,
+  passKey: string,
+): Promise<User | null> {
   return new Promise((resolve, reject) => {
     const query = `
       SELECT * FROM users WHERE pass_key = ?
@@ -95,7 +108,11 @@ export function getUserByPasskey(db: sqlite3.Database, passKey: string): Promise
   })
 }
 
-export function updateUsername(db: sqlite3.Database, username: string, passKey: string): Promise<boolean> {
+export function updateUsername(
+  db: sqlite3.Database,
+  username: string,
+  passKey: string,
+): Promise<boolean> {
   return new Promise((resolve, reject) => {
     const query = `
       UPDATE users
@@ -121,7 +138,10 @@ export function updateUsername(db: sqlite3.Database, username: string, passKey: 
   })
 }
 
-export function getImageLocation(db: sqlite3.Database, passKey: string): Promise<string | null> {
+export function getImageLocation(
+  db: sqlite3.Database,
+  passKey: string,
+): Promise<string | null> {
   return new Promise((resolve, reject) => {
     const query = `
       SELECT image_location FROM users WHERE pass_key = ?
@@ -164,5 +184,34 @@ export function upsertImageLocation(
         resolve(true)
       }
     })
+  })
+}
+
+export function getRandomData(db: sqlite3.Database): Promise<{ imageSrc: string, userName: string }> {
+  return new Promise((resolve, reject) => {
+    const fetchImage = () => {
+      const query = `
+      SELECT image_location, username
+      FROM users
+      ORDER BY RANDOM()
+      LIMIT 1
+    `
+
+      db.get(query, (err, row: User) => {
+        if (err) {
+          console.error('Error fetching random image location:', err)
+          reject(err)
+        }
+        else if (!row?.image_location) {
+          console.warn('No image location found, retrying...')
+          fetchImage() // Recursive call to retry
+        }
+        else {
+          resolve({ imageSrc: row.image_location, userName: row.username })
+        }
+      })
+    }
+
+    fetchImage()
   })
 }
