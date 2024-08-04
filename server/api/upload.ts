@@ -4,7 +4,7 @@ import { defineEventHandler, readMultipartFormData } from 'h3'
 import { initializeDb, upsertImageLocation } from '../utils/database'
 
 export default defineEventHandler(async (event) => {
-  const db = initializeDb()
+  const db = await initializeDb()
   const form = await readMultipartFormData(event)
   if (!form) return { message: 'No form data received', statusCode: 400 }
 

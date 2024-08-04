@@ -14,6 +14,7 @@
         </h1>
       </div>
     </div>
+    <GenerateAccountLink />
   </div>
 </template>
 

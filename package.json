@@ -23,6 +23,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "nuxt-rating": "^0.1.5",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
   }

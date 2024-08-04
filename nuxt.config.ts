@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   // https://nuxt.com/modules
   modules: [
     '@nuxthub/core',
+    'nuxt-rating',
     '@nuxt/eslint',
   ],
   hub: {

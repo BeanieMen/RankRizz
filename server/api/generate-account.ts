@@ -1,7 +1,7 @@
 import { initializeDb, createUser, generateRandomString } from '../utils/database'
 
 export default defineEventHandler(async (event) => {
-  const db = initializeDb()
+  const db = await initializeDb()
   if (event.method === 'POST') {
     const body = await readBody(event)
     const username = body.username

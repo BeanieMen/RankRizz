@@ -5,12 +5,13 @@ export interface User {
   username: string
   pass_key: string
   image_location: string
+  stars: string
 }
 
 export const generateRandomString = () =>
   [...Array(20)].map(() => Math.random().toString(36)[2]).join('')
 
-export function initializeDb() {
+export async function initializeDb() {
   const db = new sqlite3.Database('assets/users.db')
 
   db.serialize(() => {
@@ -20,7 +21,8 @@ export function initializeDb() {
         id TEXT PRIMARY KEY UNIQUE,
         username TEXT UNIQUE,
         pass_key TEXT NOT NULL UNIQUE,
-        image_location TEXT
+        image_location TEXT,
+        stars TEXT
       )
     `,
       (err) => {
@@ -34,7 +36,7 @@ export function initializeDb() {
   return db
 }
 
-export function createUser(
+export async function createUser(
   db: sqlite3.Database,
   username: string,
   passKey: string,
@@ -66,7 +68,7 @@ export function createUser(
   })
 }
 
-export function getUserByUsername(
+export async function getUserByUsername(
   db: sqlite3.Database,
   username: string,
 ): Promise<User | null> {
@@ -87,7 +89,7 @@ export function getUserByUsername(
   })
 }
 
-export function getUserByPasskey(
+export async function getUserByPasskey(
   db: sqlite3.Database,
   passKey: string,
 ): Promise<User | null> {
@@ -108,7 +110,7 @@ export function getUserByPasskey(
   })
 }
 
-export function updateUsername(
+export async function updateUsername(
   db: sqlite3.Database,
   username: string,
   passKey: string,
@@ -138,7 +140,7 @@ export function updateUsername(
   })
 }
 
-export function getImageLocation(
+export async function getImageLocation(
   db: sqlite3.Database,
   passKey: string,
 ): Promise<string | null> {
@@ -159,7 +161,7 @@ export function getImageLocation(
   })
 }
 
-export function upsertImageLocation(
+export async function upsertImageLocation(
   db: sqlite3.Database,
   id: string,
   imageLocation: string,
@@ -187,7 +189,7 @@ export function upsertImageLocation(
   })
 }
 
-export function getRandomData(db: sqlite3.Database): Promise<{ imageSrc: string, userName: string }> {
+export async function getRandomData(db: sqlite3.Database): Promise<{ imageSrc: string, userName: string }> {
   return new Promise((resolve, reject) => {
     const fetchImage = () => {
       const query = `
@@ -204,7 +206,7 @@ export function getRandomData(db: sqlite3.Database): Promise<{ imageSrc: string,
         }
         else if (!row?.image_location) {
           console.warn('No image location found, retrying...')
-          fetchImage() // Recursive call to retry
+          fetchImage()
         }
         else {
           resolve({ imageSrc: row.image_location, userName: row.username })
@@ -213,5 +215,41 @@ export function getRandomData(db: sqlite3.Database): Promise<{ imageSrc: string,
     }
 
     fetchImage()
+  })
+}
+
+export async function upsertStarRating(
+  db: sqlite3.Database,
+  passKey: string,
+  newStar: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const selectQuery = `
+      SELECT stars FROM users WHERE pass_key = ?
+    `
+    const updateQuery = `
+      UPDATE users SET stars = ? WHERE pass_key = ?
+    `
+
+    db.get(selectQuery, [passKey], (err, row: User) => {
+      if (err) {
+        console.error('Error fetching current star rating:', err)
+        reject(err)
+        return
+      }
+
+      const currentStars = row?.stars || ''
+      const updatedStars = currentStars + newStar
+
+      db.run(updateQuery, [updatedStars, passKey], (err) => {
+        if (err) {
+          console.error('Error updating star rating:', err)
+          reject(err)
+        }
+        else {
+          resolve()
+        }
+      })
+    })
   })
 }

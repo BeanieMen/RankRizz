@@ -51,6 +51,21 @@
               </p>
             </div>
 
+            <!-- Star Rating Section -->
+            <div class="flex flex-col items-center mt-4">
+              <h2 class="text-lg font-semibold text-gray-800 mb-2">
+                RizzRates ({{ user?.stars.length }} reviews )
+              </h2>
+              <NuxtRating
+                :read-only="true"
+                :rating-size="30"
+                :rating-value="rating"
+              />
+              <h3 class="text-md text-gray-800 mb-2">
+                {{ rating.toFixed(2) }} out of 5 stars
+              </h3>
+            </div>
+
             <div class="mt-4">
               <div
                 v-if="loading"
@@ -104,7 +119,7 @@ import type { User } from '~~/server/utils/database'
 const route = useRoute()
 
 const user = ref<User | null>(null)
-
+const rating = ref<number>(0)
 const loading = ref(true)
 const uploadError = ref<string | null>(null)
 const uploadSuccess = ref(false)
@@ -112,8 +127,9 @@ const uploadSuccess = ref(false)
 onMounted(async () => {
   try {
     const response = await fetch(`/api/user/${route.params.id}`)
-    const userData = await response.json()
+    const userData = await response.json() as { user: User, rating: number }
     user.value = userData.user
+    rating.value = userData.rating
   }
   catch (error) {
     console.error('Error fetching data:', error)
