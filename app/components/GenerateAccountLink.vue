@@ -43,11 +43,13 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
+import { useCookie } from 'nuxt/app'
 
 const username = ref('')
 const errorMessage = ref('')
 const successMessage = ref('')
 const successLink = ref('')
+const passKeyCookie = useCookie('passKey') // Create a cookie reference for passKey
 
 const submitForm = async () => {
   errorMessage.value = ''
@@ -75,6 +77,9 @@ const submitForm = async () => {
       errorMessage.value = data.error
     }
     else {
+      // Set the passKey in the cookie
+      passKeyCookie.value = data.passKey
+
       successMessage.value = 'Account generated successfully! View your account details here and please store the given link somewhere safe'
       successLink.value = `/user/${data.passKey}`
       username.value = ''

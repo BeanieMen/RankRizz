@@ -189,6 +189,33 @@ export async function upsertImageLocation(
   })
 }
 
+export async function removeImageLocation(
+  db: sqlite3.Database,
+  id: string,
+): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    const query = `
+      UPDATE users
+      SET image_location = NULL
+      WHERE id = ?
+    `
+
+    db.run(query, [id], function (err) {
+      if (err) {
+        console.error('Error removing image location:', err)
+        reject(err)
+      }
+      else if (this.changes === 0) {
+        resolve(false)
+      }
+      else {
+        console.log(`Image location removed successfully for id ${id}.`)
+        resolve(true)
+      }
+    })
+  })
+}
+
 export async function getRandomData(db: sqlite3.Database): Promise<{ imageSrc: string, userName: string }> {
   return new Promise((resolve, reject) => {
     const fetchImage = () => {

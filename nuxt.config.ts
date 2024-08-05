@@ -4,6 +4,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxthub/core',
     'nuxt-rating',
+    'nuxt-cron',
     '@nuxt/eslint',
   ],
   hub: {
@@ -15,6 +16,11 @@ export default defineNuxtConfig({
       tailwindcss: {},
       autoprefixer: {},
     },
+  },
+  cron: {
+    runOnInit: true,
+    timeZone: 'Asia/Kolkata',
+    jobsDir: 'cron',
   },
   // https://devtools.nuxt.com
   devtools: {

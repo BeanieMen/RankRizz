@@ -6,17 +6,16 @@ export default defineEventHandler(async (event) => {
     const pass = getRouterParam(event, 'pass') || ''
     const user = await getUserByPasskey(db, pass)
 
-    const stars = user?.stars.split('') ?? []
-    let total = 0
-    stars?.forEach(n => total += Number(n))
-
     if (user) {
       db.close()
+      const stars = user.stars ? user.stars.split('') : []
+      let total = 0
+      stars?.forEach(n => total += Number(n))
       return { user: user, rating: total / stars.length }
     }
     else {
       db.close()
-      return { user: null }
+      return { user: null, rating: null }
     }
   }
 })

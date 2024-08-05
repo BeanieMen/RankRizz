@@ -28,7 +28,8 @@
                 <label
                   for="file-upload"
                   class="block text-lg font-medium text-gray-700 mb-2"
-                >Upload Profile
+                >Upload
+                  Profile
                   Picture:</label>
                 <input
                   id="file-upload"
@@ -54,7 +55,7 @@
             <!-- Star Rating Section -->
             <div class="flex flex-col items-center mt-4">
               <h2 class="text-lg font-semibold text-gray-800 mb-2">
-                RizzRates ({{ user?.stars.length }} reviews )
+                RizzRates ({{ user && user.stars ? user.stars.length : 0 }} reviews )
               </h2>
               <NuxtRating
                 :read-only="true"
@@ -101,7 +102,7 @@
             </div>
             <div class="p-4 bg-white rounded-lg shadow">
               <p class="text-gray-700">
-                <strong>Nigga:</strong> Jojo ki mkc
+                <strong>Harry:</strong> Jojo ki mkc
               </p>
             </div>
           </div>
@@ -112,11 +113,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref } from 'vue'
+import { useCookie } from '#app'
 import type { User } from '~~/server/utils/database'
 
-const route = useRoute()
+const passKey = useCookie('passKey').value
 
 const user = ref<User | null>(null)
 const rating = ref<number>(0)
@@ -124,20 +125,12 @@ const loading = ref(true)
 const uploadError = ref<string | null>(null)
 const uploadSuccess = ref(false)
 
-onMounted(async () => {
-  try {
-    const response = await fetch(`/api/user/${route.params.id}`)
-    const userData = await response.json() as { user: User, rating: number }
-    user.value = userData.user
-    rating.value = userData.rating
-  }
-  catch (error) {
-    console.error('Error fetching data:', error)
-  }
-  finally {
-    loading.value = false
-  }
-})
+const userData = useFetch(`/api/user/${passKey}`)
+if (userData.data.value) {
+  user.value = userData.data.value.user
+  rating.value = userData.data.value.rating ?? 0
+}
+
 const handleFileUpload = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (file && user.value?.id) {

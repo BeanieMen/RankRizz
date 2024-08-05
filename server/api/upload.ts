@@ -12,11 +12,10 @@ export default defineEventHandler(async (event) => {
   const imageFile = form.find(field => field.name === 'image')
   if (!userId || !imageFile) return { message: 'Invalid form data', statusCode: 400 }
 
-  const folderName = `${new Date().getMonth() + 1}-${new Date().getFullYear()}`
-  const uploadPath = path.join(process.cwd(), 'public', 'user-photos', folderName)
+  const uploadPath = path.join(process.cwd(), 'public', 'user-photos', userId)
 
   await Promise.all([
-    upsertImageLocation(db, userId, `/user-photos/${folderName}/${userId}.png`),
+    upsertImageLocation(db, userId, `/user-photos/${userId}/${userId}.png`),
     fs.mkdir(uploadPath, { recursive: true }),
     fs.writeFile(path.join(uploadPath, `${userId}.png`), new Uint8Array(imageFile.data)),
   ])
