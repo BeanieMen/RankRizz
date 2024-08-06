@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const form = await readMultipartFormData(event)
   if (!form) return { message: 'No form data received', statusCode: 400 }
 
-  const userId = form.find(field => field.name === 'userId')?.data?.toString() as string
+  const userId = form.find(field => field.name === 'userId')?.data?.toString() as (string | undefined)
   if (!userId) return { message: 'Invalid form data', statusCode: 400 }
 
   const imageFile = form.find(field => field.name === 'image')
