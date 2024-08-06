@@ -17,8 +17,6 @@ export default defineCronHandler(
       folders.forEach(async (folder) => {
         await removeImageLocation(db, folder.name)
         const folderPath = path.join(directoryPath, folder.name)
-        console.log(`Folder found: ${folderPath}`)
-
         fs.rmSync(folderPath, { recursive: true, force: true })
         console.log(`Deleted folder: ${folderPath}`)
       })

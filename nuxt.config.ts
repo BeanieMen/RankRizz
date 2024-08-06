@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     'nuxt-rating',
     'nuxt-cron',
     '@nuxt/eslint',
+    'vue3-carousel-nuxt',
   ],
   hub: {
     cache: true,
@@ -18,7 +19,7 @@ export default defineNuxtConfig({
     },
   },
   cron: {
-    runOnInit: true,
+    runOnInit: false,
     timeZone: 'Asia/Kolkata',
     jobsDir: 'cron',
   },

@@ -142,20 +142,20 @@ export async function updateUsername(
 
 export async function getImageLocation(
   db: sqlite3.Database,
-  passKey: string,
+  id: string,
 ): Promise<string | null> {
   return new Promise((resolve, reject) => {
     const query = `
-      SELECT image_location FROM users WHERE pass_key = ?
+      SELECT image_location FROM users WHERE id = ?
     `
 
-    db.get(query, [passKey], (err, row: User) => {
+    db.get(query, [id], (err, row: User) => {
       if (err) {
         console.error('Error fetching image location:', err)
         reject(err)
       }
       else {
-        resolve(row.image_location)
+        resolve(row.image_location ? row.image_location : '')
       }
     })
   })
@@ -218,30 +218,23 @@ export async function removeImageLocation(
 
 export async function getRandomData(db: sqlite3.Database): Promise<{ imageSrc: string, userName: string }> {
   return new Promise((resolve, reject) => {
-    const fetchImage = () => {
-      const query = `
-      SELECT image_location, username
-      FROM users
-      ORDER BY RANDOM()
-      LIMIT 1
-    `
+    const query = `
+        SELECT image_location, username
+        FROM users
+        WHERE image_location IS NOT NULL
+        ORDER BY RANDOM()
+        LIMIT 1
+      `
 
-      db.get(query, (err, row: User) => {
-        if (err) {
-          console.error('Error fetching random image location:', err)
-          reject(err)
-        }
-        else if (!row?.image_location) {
-          console.warn('No image location found, retrying...')
-          fetchImage()
-        }
-        else {
-          resolve({ imageSrc: row.image_location, userName: row.username })
-        }
-      })
-    }
-
-    fetchImage()
+    db.get(query, (err, row: User) => {
+      if (err) {
+        console.error('Error fetching random image location:', err)
+        reject(err)
+      }
+      else {
+        resolve({ imageSrc: row.image_location, userName: row.username })
+      }
+    })
   })
 }
 

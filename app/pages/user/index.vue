@@ -2,42 +2,49 @@
   <div class="flex flex-row items-center justify-center bg-gray-900 h-[calc(100vh-4rem)] py-10 px-4">
     <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
       <div class="grid grid-cols-2 gap-x-10">
-        <!-- info section -->
+        <!-- Info Section -->
         <div class="flex flex-col">
           <div class="text-center mb-6">
             <h1 class="text-2xl font-semibold text-gray-800 mb-2">
               User Profile
             </h1>
             <p class="text-gray-600">
-              Manage your profile information and upload a profile picture.
+              Manage your profile information and upload photos.
             </p>
           </div>
 
           <div class="space-y-6">
-            <div class="flex items-center justify-center">
-              <img
-                v-if="user?.image_location"
-                :src="user?.image_location"
-                alt="Profile Picture"
-                class="w-32 h-32 object-cover rounded-full border-4 border-gray-200 shadow-md"
-              >
-              <div
-                v-else
-                class="text-center"
-              >
-                <label
-                  for="file-upload"
-                  class="block text-lg font-medium text-gray-700 mb-2"
-                >Upload
-                  Profile
-                  Picture:</label>
-                <input
-                  id="file-upload"
-                  type="file"
-                  class="block w-full text-gray-700 border border-gray-300 rounded-lg p-2"
-                  @change="handleFileUpload"
+            <!-- Photo Carousel -->
+            <Carousel
+              v-if="imageLocation !== ''"
+              :slides="imageLocation.split(',')"
+            >
+              <template #default="{ slide }">
+                <img
+                  :src="slide"
+                  alt="User Photo"
+                  class="w-full h-64 object-contain rounded-lg shadow-md"
                 >
-              </div>
+              </template>
+            </Carousel>
+            <!-- File Upload -->
+            <div
+              v-if="imageLocation.split(',').length < 3"
+              class="text-center mt-6"
+            >
+              <label
+                for="file-upload"
+                class="block text-lg font-medium text-gray-700 mb-2"
+              >
+                Upload Photos:
+              </label>
+              <input
+                id="file-upload"
+                type="file"
+                class="block w-full text-gray-700 border border-gray-300 rounded-lg p-2"
+                accept=".jpeg, .jpg, .png, .webp"
+                @change="handleFileUpload"
+              >
             </div>
 
             <div class="bg-gray-100 p-4 rounded-lg shadow-inner">
@@ -55,7 +62,7 @@
             <!-- Star Rating Section -->
             <div class="flex flex-col items-center mt-4">
               <h2 class="text-lg font-semibold text-gray-800 mb-2">
-                RizzRates ({{ user && user.stars ? user.stars.length : 0 }} reviews )
+                RizzRates ({{ user && user.stars ? user.stars.length : 0 }} reviews)
               </h2>
               <NuxtRating
                 :read-only="true"
@@ -69,13 +76,7 @@
 
             <div class="mt-4">
               <div
-                v-if="loading"
-                class="text-center text-gray-500"
-              >
-                Loading...
-              </div>
-              <div
-                v-else-if="uploadError"
+                v-if="uploadError"
                 class="text-center text-red-500"
               >
                 Error: {{ uploadError }}
@@ -84,14 +85,15 @@
                 v-else-if="uploadSuccess"
                 class="text-center text-green-500"
               >
-                Image uploaded successfully!
+                Images uploaded successfully!
               </div>
             </div>
           </div>
         </div>
-        <!-- comment section  -->
+
+        <!-- Comment Section -->
         <div class="bg-gray-100 p-4 rounded-lg shadow-inner">
-          <h2 class="text-xl text-center  font-bold text-gray-800 mb-4">
+          <h2 class="text-xl text-center font-bold text-gray-800 mb-4">
             RizzViews
           </h2>
           <div class="space-y-4">
@@ -121,7 +123,6 @@ const passKey = useCookie('passKey').value
 
 const user = ref<User | null>(null)
 const rating = ref<number>(0)
-const loading = ref(true)
 const uploadError = ref<string | null>(null)
 const uploadSuccess = ref(false)
 
@@ -130,10 +131,24 @@ if (userData.data.value) {
   user.value = userData.data.value.user
   rating.value = userData.data.value.rating ?? 0
 }
+const imageLocation = user.value?.image_location ?? ''
 
 const handleFileUpload = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (file && user.value?.id) {
+    // Validate file size and type
+    if (file.size > 200 * 1024 * 1024) {
+      uploadError.value = 'File size exceeds 200MB'
+      return
+    }
+
+    const fileType = file.type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowedTypes.includes(fileType)) {
+      uploadError.value = 'Invalid file type. Only JPEG, PNG, and WEBP images are allowed.'
+      return
+    }
+
     const formData = new FormData()
     formData.append('image', file)
     formData.append('userId', user.value?.id)
@@ -156,8 +171,8 @@ const handleFileUpload = async (event: Event) => {
       }
     }
     catch (error) {
-      uploadError.value = 'Failed to upload image'
-      console.error('Error uploading image:', error)
+      uploadError.value = 'Failed to upload images'
+      console.error('Error uploading images:', error)
     }
   }
 }
