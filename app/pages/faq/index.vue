@@ -19,6 +19,7 @@
 </template>
 
 <style scoped>
+/* FIXME inline this */
 h1 {
     @apply font-bold text-4xl;
 }

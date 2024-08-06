@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
       db.close()
       const stars = user.stars ? user.stars.split('') : []
       let total = 0
+      // FIXME: rewrite this logic
       stars?.forEach(n => total += Number(n))
       return { user: user, rating: total / stars.length }
     }

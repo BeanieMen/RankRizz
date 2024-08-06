@@ -6,6 +6,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
     const username = body.username
 
+    // FIXME early returns here
     if (username) {
       const passKey = generateRandomString()
       const success = await createUser(db, username, passKey)

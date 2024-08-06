@@ -1,5 +1,7 @@
 import sqlite3 from 'sqlite3'
 
+// FIXME database should not be in "utils", should be in db or store
+
 export interface User {
   id: string
   username: string
@@ -8,6 +10,7 @@ export interface User {
   stars: string
 }
 
+// FIXME use crypto module
 export const generateRandomString = () =>
   [...Array(20)].map(() => Math.random().toString(36)[2]).join('')
 
@@ -40,7 +43,7 @@ export async function createUser(
   db: sqlite3.Database,
   username: string,
   passKey: string,
-): Promise<boolean> {
+): Promise<boolean> { // FIXME return Promise<User | null> instead, where User has the id property (or is a basic orm)
   return new Promise((resolve, reject) => {
     const id = generateRandomString()
     const query = `
@@ -50,6 +53,7 @@ export async function createUser(
 
     db.run(query, [id, username, passKey], function (err) {
       if (err) {
+        // FIXME run a new query for checking if user exists rather than using this
         console.error('Error creating user:', err)
         if (err.message.includes('UNIQUE constraint failed')) {
           resolve(false)
@@ -155,6 +159,7 @@ export async function getImageLocation(
         reject(err)
       }
       else {
+        // FIXME return null instead or fix signature
         resolve(row.image_location ? row.image_location : '')
       }
     })
