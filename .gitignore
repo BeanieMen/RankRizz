@@ -18,3 +18,4 @@ public/workbox-sw*.js*
 assests/users.db
 .wrangler
 public/user-photos
+.env

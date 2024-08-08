@@ -11,6 +11,9 @@ dependencies:
   nuxt-rating:
     specifier: ^0.1.5
     version: 0.1.5
+  promised-sqlite3:
+    specifier: ^2.1.0
+    version: 2.1.0(sqlite3@5.1.7)
   sharp:
     specifier: ^0.33.4
     version: 0.33.4
@@ -7956,6 +7959,14 @@ packages:
     dependencies:
       err-code: 2.0.3
       retry: 0.12.0
+
+  /promised-sqlite3@2.1.0(sqlite3@5.1.7):
+    resolution: {integrity: sha512-g227r1cE/GrP7UfQdiwi1URAc7HL2LAulNrDC0vYMWcI387Urc5VoIinoXfXWDi546sZUM7gQhxrNr9a9nXN1Q==}
+    peerDependencies:
+      sqlite3: ^5
+    dependencies:
+      sqlite3: 5.1.7
+    dev: false
 
   /prompts@2.4.2:
     resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}

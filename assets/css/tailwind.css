@@ -2,14 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  /* FIX ME: lets use this format
+:root {
   --text: #050315;
---background: #fbfbfe;
---primary: #2f27ce;
---secondary: #dedcff;
---accent: #433bff; */
+  --background: #fbfbfe;
+  --primary: #2f27ce;
+  --secondary: #dedcff;
+  --accent: #433bff;
+}
 
-  background-color: #111827;
-  color: white;
+body {
+  background-color: var(--background);
+  color: var(--text);
 }

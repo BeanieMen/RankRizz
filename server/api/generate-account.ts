@@ -1,30 +1,29 @@
-import { initializeDb, createUser, generateRandomString } from '../utils/database'
+import { UserDatabase, generateRandomString } from "../db/database";
 
 export default defineEventHandler(async (event) => {
-  const db = await initializeDb()
-  if (event.method === 'POST') {
-    const body = await readBody(event)
-    const username = body.username
+  const dbInstance = UserDatabase.getInstance();
 
-    // FIXME early returns here
-    if (username) {
-      const passKey = generateRandomString()
-      const success = await createUser(db, username, passKey)
-      db.close()
-      if (success) {
-        return { passKey: passKey, username: username }
-      }
-      else {
-        return { error: 'Username is already taken' }
-      }
-    }
-    else {
-      db.close()
-      return { error: 'Username is required' }
-    }
+  if (event.method !== "POST") {
+    return { passKey: null, username: null, error: "Invalid request method" };
   }
-  else {
-    db.close()
-    return { error: 'Invalid request method' }
+
+  const body = await readBody(event);
+  const username = body.username;
+
+  if (!username) {
+    return { passKey: null, username: null, error: "Username is required" };
   }
-})
+
+  const passKey = generateRandomString();
+  const user = await dbInstance.createUser(username, passKey);
+
+  if (!user) {
+    return {
+      passKey: null,
+      username: null,
+      error: "Username is already taken",
+    };
+  }
+
+  return { passKey: passKey, username: username, error: null };
+});

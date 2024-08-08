@@ -26,6 +26,7 @@
   "dependencies": {
     "nuxt-cron": "^1.6.0",
     "nuxt-rating": "^0.1.5",
+    "promised-sqlite3": "^2.1.0",
     "sharp": "^0.33.4",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
