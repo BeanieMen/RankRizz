@@ -9,10 +9,10 @@
       </div>
 
       <!-- Photo Carousel -->
-      <div class="w-full max-w-6xl rounded-lg overflow-hidden bg-secondary border border-gray-700">
+      <div class="w-full max-w-6xl rounded-lg overflow-hidden bg-secondary">
         <Carousel
-          v-if="imageSrc.length > 0"
-          :slides="imageSrc"
+          v-if="imageLocations.length > 0"
+          :slides="imageLocations"
           class="relative"
         >
           <template #default="{ slide }">
@@ -39,12 +39,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const imageSrc = ref<string[]>([])
+const imageLocations = ref<string[]>([])
 const randomUser = ref<string | null>(null)
 
 const randomData = await useFetch(`/api/random`)
 if (randomData.data.value) {
-  imageSrc.value = randomData.data.value.imageSrc ?? []
+  imageLocations.value = randomData.data.value.imageLocations ?? []
   randomUser.value = randomData.data.value.username ?? ''
 }
 </script>

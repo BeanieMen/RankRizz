@@ -16,7 +16,6 @@ export default defineEventHandler(async (event) => {
 
     const stars = await db.getStarsById(user.id)
     const rating = stars.reduce((a, b) => a + b.star_rating, 0) / stars.length
-
     return { user: user, rating: rating, imageLocations: imageLocations, starCount: stars.length }
   }
   else {

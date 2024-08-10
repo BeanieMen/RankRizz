@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-row items-center justify-center bg-background h-[calc(100vh-4rem)] py-10 px-4">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl text-black">
       <div class="grid grid-cols-2 gap-x-10">
         <!-- Info Section -->
         <div class="flex flex-col">
