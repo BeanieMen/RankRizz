@@ -17,7 +17,7 @@ export default defineCronHandler(
       const folders = items.filter(item => item.isDirectory())
 
       folders.forEach(async (folder) => {
-        // folder.name = user_id / id
+        // folder.name = userId / id
         await db.deleteImages(folder.name)
         const folderPath = path.join(directoryPath, folder.name)
         fs.rmSync(folderPath, { recursive: true, force: true })

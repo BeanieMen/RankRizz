@@ -3,5 +3,5 @@
 
 <template>
   <Navbar/>
-  <NuxtPage/>
+  <NuxtPage class='pt-20'/>
 </template>

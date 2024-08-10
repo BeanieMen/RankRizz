@@ -5,19 +5,19 @@ export default defineEventHandler(async (event) => {
   await db.initialize()
 
   if (event.method !== 'POST') {
-    return { passKey: null, username: null, error: 'Invalid request method' }
+    return { error: 'Invalid request method' }
   }
 
   const body = await readBody(event)
   const username = body.username
 
   if (!username) {
-    return { passKey: null, username: null, error: 'Username is required' }
+    return { error: 'Username is required' }
   }
 
   const existingUser = await db.getUserViaName(username)
   if (existingUser) {
-    return { passKey: null, username: null, error: 'Username is already taken' }
+    return { error: 'Username is already taken' }
   }
 
   const passKey = generateRandomString()
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
   const user = await db.createUser(id, username, passKey)
 
   if (!user) {
-    return { passKey: null, username: null, error: 'Failed to create user' }
+    return { error: 'Failed to create user' }
   }
 
   return { passKey, username, error: null }

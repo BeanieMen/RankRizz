@@ -6,13 +6,13 @@ import sqlite3 from 'sqlite3'
 export interface User {
   id: string
   username: string
-  pass_key: string
+  passKey: string
 }
 
 interface Images {
   id: number
-  user_id: string
-  image_location: string
+  userId: string
+  imageLocation: string
 }
 
 export class UserDatabase {
@@ -46,18 +46,18 @@ export class UserDatabase {
     if ((await this.getUserViaId(id)) !== null) return null
 
     const query = `
-      INSERT INTO users (id, username, pass_key)
+      INSERT INTO users (id, username, passKey)
       VALUES (?, ?, ?);
     `
     await this.db.run(query, id, username, passKey)
-    return { id: id, username: username, pass_key: passKey }
+    return { id: id, username: username, passKey: passKey }
   }
 
   async getUserViaId(
     id: string,
-  ): Promise<{ id: string, username: string, pass_key: string } | null> {
+  ): Promise<{ id: string, username: string, passKey: string } | null> {
     const query = `
-      SELECT id, username, pass_key FROM users
+      SELECT id, username, passKey FROM users
       WHERE id = ?;
     `
     const row: User = await this.db.get(query, id)
@@ -66,10 +66,10 @@ export class UserDatabase {
 
   async getUserViaPass(
     passKey: string,
-  ): Promise<{ id: string, username: string, pass_key: string } | null> {
+  ): Promise<{ id: string, username: string, passKey: string } | null> {
     const query = `
-      SELECT id, username, pass_key FROM users
-      WHERE pass_key = ?;
+      SELECT id, username, passKey FROM users
+      WHERE passKey = ?;
     `
     const row: User = await this.db.get(query, passKey)
     return row || null
@@ -77,9 +77,9 @@ export class UserDatabase {
 
   async getUserViaName(
     username: string,
-  ): Promise<{ id: string, username: string, pass_key: string } | null> {
+  ): Promise<{ id: string, username: string, passKey: string } | null> {
     const query = `
-      SELECT id, username, pass_key FROM users
+      SELECT id, username, passKey FROM users
       WHERE username = ?;
     `
     const row: User = await this.db.get(query, username)
@@ -88,7 +88,7 @@ export class UserDatabase {
 
   async createStar(userId: string, starRating: number): Promise<void> {
     const query = `
-      INSERT INTO stars (user_id, star_rating)
+      INSERT INTO stars (userId, starReviewCount)
       VALUES (?, ?);
     `
     await this.db.run(query, userId, starRating)
@@ -96,18 +96,18 @@ export class UserDatabase {
 
   async getStarsById(
     userId: string,
-  ): Promise<Array<{ star_rating: number }>> {
+  ): Promise<Array<{ starReviewCount: number }>> {
     const query = `
-      SELECT star_rating FROM stars
-      WHERE user_id = ?;
+      SELECT starReviewCount FROM stars
+      WHERE userId = ?;
     `
-    const rows: { star_rating: number }[] = await this.db.all(query, userId)
+    const rows: { starReviewCount: number }[] = await this.db.all(query, userId)
     return rows
   }
 
   async addImage(userId: string, imageLocation: string): Promise<void> {
     const query = `
-      INSERT INTO images (user_id, image_location)
+      INSERT INTO images (userId, imageLocation)
       VALUES (?, ?);
     `
     await this.db.run(query, userId, imageLocation)
@@ -115,50 +115,66 @@ export class UserDatabase {
 
   async getImagesById(
     userId: string,
-  ): Promise<Array<{ image_location: string }>> {
+  ): Promise<Array<{ imageLocation: string }>> {
     const query = `
-      SELECT image_location FROM images
-      WHERE user_id = ?;
+      SELECT imageLocation FROM images
+      WHERE userId = ?;
     `
-    const rows: { image_location: string }[] = await this.db.all(query, userId)
+    const rows: { imageLocation: string }[] = await this.db.all(query, userId)
     return rows
   }
 
   async deleteImages(userId: string): Promise<void> {
     const query = `
-      DELETE FROM images WHERE user_id = ?;
+      DELETE FROM images WHERE userId = ?;
     `
     await this.db.run(query, userId)
   }
 
   async getRandomImageLocation() {
     const userQuery = `
-      SELECT user_id FROM images
+      SELECT userId FROM images
       ORDER BY RANDOM()
       LIMIT 1;
     `
     const userRow: Images = await this.db.get(userQuery)
-    if (!userRow || !userRow.user_id) {
+    if (!userRow || !userRow.userId) {
       return null
     }
 
-    const userId = userRow.user_id
+    const userId = userRow.userId
 
     const imagesQuery = `
-    SELECT image_location FROM images
-    WHERE user_id = ?;
+    SELECT imageLocation FROM images
+    WHERE userId = ?;
   `
     const imageRows: Images[] = await this.db.all(imagesQuery, userId)
-    const imageLocations = imageRows.map((row: Images) => row.image_location)
+    const imageLocations = imageRows.map((row: Images) => row.imageLocation)
     const user = await this.getUserViaId(userId)
     return {
       username: user?.username,
-      image_locations: imageLocations,
+      imageLocations: imageLocations,
+      userId: userId
     }
   }
 
-  async close(): Promise<void> {
-    await this.db.close()
+  async addComment(userId: string, comment: string): Promise<void> {
+    const query = `
+      INSERT INTO comments (userId, comment)
+      VALUES (?, ?);
+    `
+    await this.db.run(query, userId, comment)
+  }
+
+  async getCommentsById(
+    userId: string,
+  ): Promise<Array<{ comment: string }>> {
+    const query = `
+      SELECT comment FROM comments
+      WHERE userId = ?;
+    `
+    const rows: { comment: string }[] = await this.db.all(query, userId)
+    return rows
   }
 }
 

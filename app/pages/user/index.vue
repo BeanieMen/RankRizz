@@ -1,27 +1,27 @@
 <template>
-  <div class="flex flex-row items-center justify-center bg-background h-[calc(100vh-4rem)] py-10 px-4">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl text-black">
-      <div class="grid grid-cols-2 gap-x-10">
-        <!-- Info Section -->
-        <div class="flex flex-col">
+  <div class="flex flex-col items-center bg-background h-screen py-10 px-5">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl text-black flex flex-col items-center my-auto">
+      <div class="flex flex-col md:grid md:grid-cols-2 md:gap-x-10 w-full">
+        <div class="flex flex-col mb-6 md:mb-0">
+
           <div class="text-center mb-6">
-            <h1 class="text-3xl font-semibold  mb-2">
+            <h1 class="text-2xl md:text-3xl font-semibold mb-2">
               User Profile
             </h1>
-            <p class="">
+            <p>
               Manage your profile information and upload photos.
             </p>
           </div>
 
           <div class="space-y-6">
-            <!-- Photo Carousel -->
+
             <UCarousel :items="imageLocations" :ui="{
               item: 'basis-full',
               container: 'rounded-lg',
               indicators: {
                 wrapper: 'relative bottom-0 mt-4'
               }
-            }" indicators class="w-64 mx-auto">
+            }" indicators class="w-full md:w-64 mx-auto">
               <template #default="{ item }">
                 <img :src="item" class="w-full" draggable="false">
               </template>
@@ -31,36 +31,36 @@
                   class="rounded-full min-w-6 justify-center" @click="onClick(page)" />
               </template>
             </UCarousel>
-            <!-- File Upload -->
+
             <div v-if="imageLocations.length < 3" class="text-center mt-6">
-              <label for="file-upload" class="block text-lg font-medium  mb-2">
+              <label for="file-upload" class="block text-lg font-medium mb-2">
                 Upload Photos:
               </label>
-              <input id="file-upload" type="file" class="block w-full  border border-gray-300 rounded-lg p-2"
+              <input id="file-upload" type="file" class="block w-full border border-gray-300 rounded-lg p-2"
                 accept=".jpeg, .jpg, .png, .webp" @change="handleFileUpload">
             </div>
 
             <div class="bg-gray-100 p-4 rounded-lg shadow-inner">
-              <p class="">
+              <p>
                 <strong>ID:</strong> {{ user?.id }}
               </p>
-              <p class="">
+              <p>
                 <strong>Username:</strong> {{ user?.username }}
               </p>
-              <p class="">
-                <strong>Pass Key:</strong> {{ user?.pass_key }}
+              <p>
+                <strong>Pass Key:</strong> {{ user?.passKey }}
               </p>
             </div>
 
             <!-- Star Rating Section -->
             <div class="flex flex-col items-center mt-4">
               <h2 class="text-lg font-semibold mb-2">
-                RizzRates ({{ starCount }} reviews)
+                RizzRates ({{ starReviewCount }} reviews)
               </h2>
-              <NuxtRating :read-only="true" :rating-size="30" :rating-value="rating" border-color="#db8403"
+              <NuxtRating :read-only="true" :rating-size="24" :rating-value="rating" border-color="#db8403"
                 active-color="#ffa41c" inactive-color="#fff" :rating-step="0.5" :rounded-corners="true"
                 :border-width="5" />
-              <h3 class="text-md  mb-2">
+              <h3 class="text-md mb-2">
                 {{ rating.toFixed(2) }} out of 5 stars
               </h3>
             </div>
@@ -77,20 +77,13 @@
         </div>
 
         <!-- Comment Section -->
-        <div class="bg-gray-100 p-4 rounded-lg shadow-inner">
-          <h2 class="text-xl text-center font-bold  mb-4">
+        <div class="bg-gray-100 p-4 rounded-lg shadow-inner w-full my-auto h-[90vh] max-h-[40rem] overflow-y-auto">
+          <h2 class="text-xl text-center font-bold mb-4">
             RizzViews
           </h2>
           <div class="space-y-4">
-            <div class="p-4 bg-white rounded-lg shadow">
-              <p class="">
-                <strong>Samarth:</strong> Bheri handsum munda ahhhhh
-              </p>
-            </div>
-            <div class="p-4 bg-white rounded-lg shadow">
-              <p class="">
-                <strong>Harry:</strong> Jojo ki mkc
-              </p>
+            <div v-for="(comment, index) in comments" :key="index" class="p-4 bg-white rounded-lg shadow">
+              <p>{{ comment }}</p>
             </div>
           </div>
         </div>
@@ -98,6 +91,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -109,15 +103,18 @@ const passKey = useCookie('passKey').value
 const user = ref<User | null>(null)
 const rating = ref<number>(0)
 const imageLocations = ref<string[]>([])
+const comments = ref<string[]>([])
 const uploadError = ref<string | null>(null)
 const uploadSuccess = ref(false)
-let starCount = 0
+let starReviewCount = 0
+
 const userData = await useFetch(`/api/user/${passKey}`)
 if (userData.data.value) {
   user.value = userData.data.value.user
   rating.value = userData.data.value.rating ?? 0
   imageLocations.value = userData.data.value.imageLocations ?? []
-  starCount = userData.data.value.starCount ?? 0
+  starReviewCount = userData.data.value.starReviewCount ?? 0
+  comments.value = userData.data.value.comments ?? []
 }
 
 const handleFileUpload = async (event: Event) => {

@@ -7,9 +7,9 @@ Fetches user information based on the provided pass.
 
 **Response:**
 - `user`: User details.
-- `image_locations`: List of images uploaded by the user.
+- `imageLocations`: List of images uploaded by the user.
 - `rating`: Average rating given to the user.
-- `starCount`: Total number of stars given to the user.
+- `starReviewCount`: Total number of stars given to the user.
 
 **Example Request and Response:**
 ```http
@@ -19,12 +19,12 @@ GET /user/somepass
     "id": 1,
     "username": "exampleUser"
   },
-  "image_locations": [
+  "imageLocations": [
     "/images/user1/photo1.png",
     "/images/user1/photo2.png"
   ],
   "rating": 4.5,
-  "starCount": 20
+  "starReviewCount": 20
 }
 ```
 
@@ -66,14 +66,14 @@ Fetches a random username and all associated image locations.
 **Respone:**
 
 - `username`: The random username.
-- `image_locations`: List of images associated with the username.
+- `imageLocations`: List of images associated with the username.
 
 **Example Request and Response:**
 ```http
 GET /random
 {
   "username": "randomUser",
-  "image_locations": [
+  "imageLocations": [
     "/images/randomUser/photo1.png",
     "/images/randomUser/photo2.png"
   ]

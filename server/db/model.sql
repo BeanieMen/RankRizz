@@ -1,17 +1,23 @@
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY UNIQUE,
   username TEXT NOT NULL UNIQUE,
-  pass_key TEXT NOT NULL UNIQUE
+  passKey TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS stars (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id TEXT REFERENCES users(id),
-  star_rating INTEGER CHECK (star_rating BETWEEN 1 AND 5)
+  userId TEXT REFERENCES users(id),
+  starReviewCount INTEGER CHECK (starReviewCount BETWEEN 1 AND 5)
 );
 
 CREATE TABLE IF NOT EXISTS images (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id TEXT REFERENCES users(id),
-  image_location TEXT
+  userId TEXT REFERENCES users(id),
+  imageLocation TEXT
+);
+
+CREATE TABLE IF NOT EXISTS comments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId TEXT REFERENCES users(id),
+  comment TEXT
 );
