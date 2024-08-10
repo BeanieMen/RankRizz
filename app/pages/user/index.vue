@@ -5,88 +5,71 @@
         <!-- Info Section -->
         <div class="flex flex-col">
           <div class="text-center mb-6">
-            <h1 class="text-3xl font-semibold text-text mb-2">
+            <h1 class="text-3xl font-semibold  mb-2">
               User Profile
             </h1>
-            <p class="text-text">
+            <p class="">
               Manage your profile information and upload photos.
             </p>
           </div>
 
           <div class="space-y-6">
             <!-- Photo Carousel -->
-            <Carousel
-              v-if="imageLocations.length > 0"
-              :slides="imageLocations"
-            >
-              <template #default="{ slide }">
-                <div class="relative w-full h-0 pb-[56.25%]">
-                  <img
-                    :src="slide"
-                    alt="User Photo"
-                    class="absolute inset-0 w-full h-full object-contain rounded-lg shadow-md"
-                  >
-                </div>
+            <UCarousel :items="imageLocations" :ui="{
+              item: 'basis-full',
+              container: 'rounded-lg',
+              indicators: {
+                wrapper: 'relative bottom-0 mt-4'
+              }
+            }" indicators class="w-64 mx-auto">
+              <template #default="{ item }">
+                <img :src="item" class="w-full" draggable="false">
               </template>
-            </Carousel>
+
+              <template #indicator="{ onClick, page, active }">
+                <UButton :label="String(page)" :variant="active ? 'solid' : 'outline'" size="2xs"
+                  class="rounded-full min-w-6 justify-center" @click="onClick(page)" />
+              </template>
+            </UCarousel>
             <!-- File Upload -->
-            <div
-              v-if="imageLocations.length < 3"
-              class="text-center mt-6"
-            >
-              <label
-                for="file-upload"
-                class="block text-lg font-medium text-text mb-2"
-              >
+            <div v-if="imageLocations.length < 3" class="text-center mt-6">
+              <label for="file-upload" class="block text-lg font-medium  mb-2">
                 Upload Photos:
               </label>
-              <input
-                id="file-upload"
-                type="file"
-                class="block w-full text-text border border-gray-300 rounded-lg p-2"
-                accept=".jpeg, .jpg, .png, .webp"
-                @change="handleFileUpload"
-              >
+              <input id="file-upload" type="file" class="block w-full  border border-gray-300 rounded-lg p-2"
+                accept=".jpeg, .jpg, .png, .webp" @change="handleFileUpload">
             </div>
 
             <div class="bg-gray-100 p-4 rounded-lg shadow-inner">
-              <p class="text-text">
+              <p class="">
                 <strong>ID:</strong> {{ user?.id }}
               </p>
-              <p class="text-text">
+              <p class="">
                 <strong>Username:</strong> {{ user?.username }}
               </p>
-              <p class="text-text">
+              <p class="">
                 <strong>Pass Key:</strong> {{ user?.pass_key }}
               </p>
             </div>
 
             <!-- Star Rating Section -->
             <div class="flex flex-col items-center mt-4">
-              <h2 class="text-lg font-semibold text-text mb-2">
+              <h2 class="text-lg font-semibold mb-2">
                 RizzRates ({{ starCount }} reviews)
               </h2>
-              <NuxtRating
-                :read-only="true"
-                :rating-size="30"
-                :rating-value="rating"
-              />
-              <h3 class="text-md text-text mb-2">
+              <NuxtRating :read-only="true" :rating-size="30" :rating-value="rating" border-color="#db8403"
+                active-color="#ffa41c" inactive-color="#fff" :rating-step="0.5" :rounded-corners="true"
+                :border-width="5" />
+              <h3 class="text-md  mb-2">
                 {{ rating.toFixed(2) }} out of 5 stars
               </h3>
             </div>
 
             <div class="mt-4">
-              <div
-                v-if="uploadError"
-                class="text-center text-red-500"
-              >
+              <div v-if="uploadError" class="text-center text-red-500">
                 Error: {{ uploadError }}
               </div>
-              <div
-                v-else-if="uploadSuccess"
-                class="text-center text-green-500"
-              >
+              <div v-else-if="uploadSuccess" class="text-center text-green-500">
                 Images uploaded successfully!
               </div>
             </div>
@@ -95,17 +78,17 @@
 
         <!-- Comment Section -->
         <div class="bg-gray-100 p-4 rounded-lg shadow-inner">
-          <h2 class="text-xl text-center font-bold text-text mb-4">
+          <h2 class="text-xl text-center font-bold  mb-4">
             RizzViews
           </h2>
           <div class="space-y-4">
             <div class="p-4 bg-white rounded-lg shadow">
-              <p class="text-text">
+              <p class="">
                 <strong>Samarth:</strong> Bheri handsum munda ahhhhh
               </p>
             </div>
             <div class="p-4 bg-white rounded-lg shadow">
-              <p class="text-text">
+              <p class="">
                 <strong>Harry:</strong> Jojo ki mkc
               </p>
             </div>
@@ -158,7 +141,7 @@ const handleFileUpload = async (event: Event) => {
     formData.append('userId', user.value?.id)
 
     try {
-      const response = await useFetch(`/api/upload`, {
+      const response = await useFetch("/api/upload", {
         method: 'POST',
         body: formData,
       })

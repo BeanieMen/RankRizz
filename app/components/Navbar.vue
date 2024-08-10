@@ -13,9 +13,15 @@
       </li>
       <li>
         <a
-          href="/about"
+          href="/feed"
           class="hover:underline"
-        >About</a>
+        >Feed</a>
+      </li>
+      <li>
+        <a
+          href="/user"
+          class="hover:underline"
+        >User</a>
       </li>
       <li>
         <a

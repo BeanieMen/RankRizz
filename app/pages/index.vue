@@ -1,50 +1,23 @@
 <template>
-  <div class="max-w-6xl mx-auto p-6 bg-background text-text">
-    <div class="flex flex-col items-center">
-      <!-- User Info -->
-      <div class="mb-8 text-center">
-        <h1 class="text-3xl font-bold mb-4">
-          Username: <span class="text-accent">{{ randomUser }}</span>
-        </h1>
-      </div>
+  <div class="text-[#313756] flex flex-col justify-center items-center h-[calc(100vh-4rem)]">
+    <div class="w-full max-w-lg p-6 shadow-md rounded-lg bg-white">
+      <h1 class="text-2xl font-bold mb-6 text-center">Welcome to RankRizz</h1>
 
-      <!-- Photo Carousel -->
-      <div class="w-full max-w-6xl rounded-lg overflow-hidden bg-secondary">
-        <Carousel
-          v-if="imageLocations.length > 0"
-          :slides="imageLocations"
-          class="relative"
-        >
-          <template #default="{ slide }">
-            <div class="relative w-full h-0 pb-[56.25%]">
-              <!-- Aspect ratio 16:9 -->
-              <img
-                :src="slide"
-                alt="User Photo"
-                class="absolute inset-0 w-full h-full object-contain"
-              >
-            </div>
-          </template>
-        </Carousel>
-      </div>
-    </div>
+      <p class="text-center mb-6">
+        Ever wondered what’s the real tea on your pics? <br>
+        🌟 RankRizz is where you drop your photos and get the lowdown from real people.
+        No filters, just straight-up honest reviews and opinions.
+      </p>
 
-    <!-- Authentication Component -->
-    <div class="mt-8">
-      <Auth />
+      <div class="shadow-2xl p-6">
+        <div class="w-full font-bold py-2 px-4 rounded-lg bg-blue-500 text-white transition duration-300 text-center">
+          Sign Up
+        </div>
+
+        <div class="mt-4">
+          <SignUp />
+        </div>
+      </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-
-const imageLocations = ref<string[]>([])
-const randomUser = ref<string | null>(null)
-
-const randomData = await useFetch(`/api/random`)
-if (randomData.data.value) {
-  imageLocations.value = randomData.data.value.imageLocations ?? []
-  randomUser.value = randomData.data.value.username ?? ''
-}
-</script>

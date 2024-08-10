@@ -5,11 +5,13 @@ export default defineEventHandler(async (event) => {
     return { user: null, rating: null, imageLocations: null, starCount: null }
   }
 
+
   const db = new UserDatabase()
   await db.initialize()
 
   const passKey = getRouterParam(event, 'pass') || ''
   const user = await db.getUserViaPass(passKey)
+
   if (user) {
     const imageLocationData = await db.getImagesById(user.id)
     const imageLocations = imageLocationData.map(obj => obj.image_location)

@@ -6,7 +6,7 @@ export default defineNuxtConfig({
     'nuxt-rating',
     'nuxt-cron',
     '@nuxt/eslint',
-    'vue3-carousel-nuxt',
+    "@nuxt/ui"
   ],
   hub: {
     cache: true,

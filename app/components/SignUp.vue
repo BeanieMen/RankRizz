@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-md mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
+  <div class="max-w-md mx-auto mt-8 p-6 bg-white  rounded-lg">
     <form @submit.prevent="submitForm">
       <div class="mb-4">
         <label
@@ -11,21 +11,26 @@
           v-model="username"
           type="text"
           required
-          class="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full text-black px-3 py-2 border bg-white border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
       </div>
-      <button
-        type="submit"
-        class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
-      >
-        Generate Account
-      </button>
+
+      <div class="flex justify-center">
+        <button
+          type="submit"
+          class="px-5 bg-blue-500 text-white font-bold py-2 rounded-lg hover:bg-blue-600 transition duration-300"
+        >
+          Generate Account
+        </button>
+      </div>
+
       <p
         v-if="errorMessage"
         class="mt-4 text-red-500 font-bold"
       >
         {{ errorMessage }}
       </p>
+
       <p
         v-if="successMessage"
         class="mt-4 text-green-500 font-bold"
@@ -73,11 +78,8 @@ const submitForm = async () => {
       }
       else {
         passKeyCookie.value = data.passKey
-        successMessage.value = 'Account generated successfully!'
-
-        setTimeout(() => {
-          router.push(`/user/`)
-        }, 2000)
+        successMessage.value = 'Account generated successfully. Keep the link given safe as it is used to login to your account'
+        successLink.value = `/passkey-login?pass=${passKeyCookie.value}`
       }
     }
   }
