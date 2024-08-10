@@ -6,10 +6,11 @@
 Fetches user information based on the provided pass.
 
 **Response:**
-- `user`: User details.
-- `imageLocations`: List of images uploaded by the user.
-- `rating`: Average rating given to the user.
-- `starReviewCount`: Total number of stars given to the user.
+- `user` (User) : User details.
+- `imageLocations` (string[]) : List of images uploaded by the user.
+- `rating` (string) : Average rating given to the user.
+- `starReviewCount` (string) : Total number of stars given to the user.
+- `comments` (string[]) : The comments given to the user.
 
 **Example Request and Response:**
 ```http
@@ -17,14 +18,19 @@ GET /user/somepass
 {
   "user": {
     "id": 1,
-    "username": "exampleUser"
+    "username": "exampleUser",
+    "passKey" : "examplePass"
   },
   "imageLocations": [
     "/images/user1/photo1.png",
     "/images/user1/photo2.png"
   ],
   "rating": 4.5,
-  "starReviewCount": 20
+  "starReviewCount": 20,
+  "comments": [
+  "unmatched rizz",
+  "absolute L"
+  ]
 }
 ```
 
@@ -36,8 +42,8 @@ Creates a new user account based on the provided username.
 - `username` (string): The desired username for the new account.
 
 **Response:**
-- `passKey` (string|null): The generated pass key for the new account, or `null` if an error occurred.
-- `username` (string|null): The username that was attempted to be created, or `null` if an error occurred.
+- `passKey` (string): The generated pass key for the new account.
+- `username` (string): The username that was attempted to be created.
 - `error` (string|null): An error message if the request failed, or `null` if successful.
 
 **Example Request:**
@@ -64,9 +70,9 @@ Content-Type: application/json
 Fetches a random username and all associated image locations.
 
 **Respone:**
-
-- `username`: The random username.
-- `imageLocations`: List of images associated with the username.
+- `username` (string) : The random username.
+- `imageLocations` (string[]) : List of images associated with the username.
+- `userId` (string) : The random user id.
 
 **Example Request and Response:**
 ```http
@@ -76,7 +82,8 @@ GET /random
   "imageLocations": [
     "/images/randomUser/photo1.png",
     "/images/randomUser/photo2.png"
-  ]
+  ],
+  "userId": "randomId"
 }
 
 ```
@@ -90,13 +97,32 @@ The body will be in the form of formdata
 
 **Request Body:**
 
-- `userId`: The ID of the user.
-- `image`: The image file to be uploaded.
+- `userId` (string) : The ID of the user.
+- `image` (Buffer) : The image file to be uploaded.
 
 
 **Example Response:**
 ```http
 {
-    message: 'File uploaded successfully' 
+    "message": "File uploaded successfully"
+}
+```
+
+### `POST /recieve-rating`
+
+Uploads the rating given by a user and updates the database.
+
+The body will be in the form of formdata
+
+**Request Body:**
+
+- `userId` (string) : The ID of the user.
+- `starRating` (string): The recieved comment.
+- `comment` (string) : The recieved star rating.
+
+**Example Response:**
+```http
+{
+    "message":  "Successfully uploaded ratings" 
 }
 ```
