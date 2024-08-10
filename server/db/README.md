@@ -36,7 +36,6 @@ Creates a new user account based on the provided username.
 - `username` (string): The desired username for the new account.
 
 **Response:**
-- `success` (boolean): Indicates if the account creation was successful.
 - `passKey` (string|null): The generated pass key for the new account, or `null` if an error occurred.
 - `username` (string|null): The username that was attempted to be created, or `null` if an error occurred.
 - `error` (string|null): An error message if the request failed, or `null` if successful.
@@ -96,7 +95,7 @@ The body will be in the form of formdata
 
 
 **Example Response:**
-```
+```http
 {
     message: 'File uploaded successfully' 
 }
