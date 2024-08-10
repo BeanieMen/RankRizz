@@ -10,10 +10,19 @@
 
       <!-- Photo Carousel -->
       <div class="w-full max-w-6xl rounded-lg overflow-hidden bg-secondary border border-gray-700">
-        <Carousel v-if="imageSrc !== ''" :slides="imageSrc.split(',')" class="relative">
+        <Carousel
+          v-if="imageSrc.length > 0"
+          :slides="imageSrc"
+          class="relative"
+        >
           <template #default="{ slide }">
-            <div class="relative w-full h-0 pb-[56.25%]"> <!-- Aspect ratio 16:9 -->
-              <img :src="slide" alt="User Photo" class="absolute inset-0 w-full h-full object-contain">
+            <div class="relative w-full h-0 pb-[56.25%]">
+              <!-- Aspect ratio 16:9 -->
+              <img
+                :src="slide"
+                alt="User Photo"
+                class="absolute inset-0 w-full h-full object-contain"
+              >
             </div>
           </template>
         </Carousel>
@@ -28,24 +37,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 
-const imageSrc = ref<string>('')
+const imageSrc = ref<string[]>([])
 const randomUser = ref<string | null>(null)
 
-onMounted(async () => {
-  try {
-    const response = await fetch(`/api/random`)
-    const userData: { imageSrc: string, userName: string } = await response.json()
-    imageSrc.value = userData.imageSrc
-    randomUser.value = userData.userName
-  }
-  catch (error) {
-    console.error('Error fetching data:', error)
-  }
-})
+const randomData = await useFetch(`/api/random`)
+if (randomData.data.value) {
+  imageSrc.value = randomData.data.value.imageSrc ?? []
+  randomUser.value = randomData.data.value.username ?? ''
+}
 </script>
-
-<style scoped>
-/* Optional custom styles here */
-</style>

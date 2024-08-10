@@ -1,222 +1,167 @@
-import crypto from "crypto";
-import { AsyncDatabase } from "promised-sqlite3";
-import sqlite3 from "sqlite3";
-import { promises as fs } from "fs";
-import path from "path";
+import fs from 'fs/promises'
+import crypto from 'crypto'
+import { AsyncDatabase } from 'promised-sqlite3'
+import sqlite3 from 'sqlite3'
 
 export interface User {
-  id: string;
-  username: string;
-  pass_key: string;
-  image_location: string;
-  stars: string;
+  id: string
+  username: string
+  pass_key: string
+}
+
+interface Images {
+  id: number
+  user_id: string
+  image_location: string
 }
 
 export class UserDatabase {
-  private static instance: UserDatabase;
-  private db: AsyncDatabase | null = null;
+  private db: AsyncDatabase
 
-  private constructor() {}
-
-  public static getInstance(): UserDatabase {
-    if (!UserDatabase.instance) {
-      UserDatabase.instance = new UserDatabase();
-    }
-    return UserDatabase.instance;
+  constructor() {
+    this.db = new AsyncDatabase(new sqlite3.Database('./server/db/users.db'))
   }
 
-  private async ensureInitialized(): Promise<void> {
-    if (!this.db) {
-      this.db = new AsyncDatabase(new sqlite3.Database("./server/db/users.db"));
-      const schemaPath = path.join(process.cwd(), "server", "db", "schema.sql");
-      const schemaSql = await fs.readFile(schemaPath, "utf-8");
-      await this.db.exec(schemaSql);
+  async initialize(): Promise<void> {
+    try {
+      const sql = await fs.readFile('./server/db/model.sql', 'utf-8')
+      const tables = sql.split(';').filter(command => command.trim())
+
+      for (const table of tables) {
+        await this.db.run(table)
+      }
+    }
+    catch (error) {
+      console.error('Failed to initialize database:', error)
+      throw error
     }
   }
 
-  public async createUser(
+  async createUser(
+    id: string,
     username: string,
-    passKey: string
+    passKey: string,
   ): Promise<User | null> {
-    await this.ensureInitialized();
+    // check if user exists
+    if ((await this.getUserViaId(id)) !== null) return null
 
-    const id = generateRandomString();
     const query = `
       INSERT INTO users (id, username, pass_key)
-      VALUES (?, ?, ?)
-    `;
-    try {
-      await this.db!.run(query, [id, username, passKey]);
-      console.log(
-        `User ${username} created successfully with pass: ${passKey}`
-      );
-      return { id, username, pass_key: passKey, image_location: "", stars: "" };
-    } catch (err: unknown) {
-      console.error("Error creating user:", err);
-      return null;
-    }
+      VALUES (?, ?, ?);
+    `
+    await this.db.run(query, id, username, passKey)
+    return { id: id, username: username, pass_key: passKey }
   }
 
-  public async getUserByUsername(username: string): Promise<User | null> {
-    await this.ensureInitialized();
-
-    const query = `
-      SELECT * FROM users WHERE username = ?
-    `;
-    try {
-      const row = (await this.db!.get(query, [username])) as User;
-      return row || null;
-    } catch (err) {
-      console.error("Error fetching user:", err);
-      throw err;
-    }
-  }
-
-  public async getUserByPasskey(passKey: string): Promise<User | null> {
-    await this.ensureInitialized();
-
-    const query = `
-      SELECT * FROM users WHERE pass_key = ?
-    `;
-    try {
-      const row = (await this.db!.get(query, [passKey])) as User;
-      return row || null;
-    } catch (err) {
-      console.error("Error fetching user:", err);
-      throw err;
-    }
-  }
-
-  public async updateUsername(
-    username: string,
-    passKey: string
-  ): Promise<boolean> {
-    await this.ensureInitialized();
-
-    if ((await this.getUserByUsername(username)) !== null) return false;
-
-    const query = `
-      UPDATE users
-      SET username = ?
-      WHERE pass_key = ?
-    `;
-    try {
-      const result = await this.db!.run(query, [username, passKey]);
-      if (result.changes === 0) return false;
-      console.log(`User ${username} updated successfully.`);
-      return true;
-    } catch (err: unknown) {
-      console.error("Error updating user:", err);
-      return false;
-    }
-  }
-
-  public async getImageLocation(id: string): Promise<string | null> {
-    await this.ensureInitialized();
-
-    const query = `
-      SELECT image_location FROM users WHERE id = ?
-    `;
-    try {
-      const row = (await this.db!.get(query, [id])) as User;
-      return row?.image_location || null;
-    } catch (err) {
-      console.error("Error fetching image location:", err);
-      throw err;
-    }
-  }
-
-  public async upsertImageLocation(
+  async getUserViaId(
     id: string,
-    imageLocation: string
-  ): Promise<boolean> {
-    await this.ensureInitialized();
-
+  ): Promise<{ id: string, username: string, pass_key: string } | null> {
     const query = `
-      UPDATE users
-      SET image_location = ?
-      WHERE id = ?
-    `;
-    try {
-      const result = await this.db!.run(query, [imageLocation, id]);
-      if (result.changes === 0) return false;
-      console.log(`Image location updated successfully for id ${id}.`);
-      return true;
-    } catch (err) {
-      console.error("Error updating image location:", err);
-      throw err;
-    }
+      SELECT id, username, pass_key FROM users
+      WHERE id = ?;
+    `
+    const row: User = await this.db.get(query, id)
+    return row || null
   }
 
-  public async removeImageLocation(id: string): Promise<boolean> {
-    await this.ensureInitialized();
-
-    const query = `
-      UPDATE users
-      SET image_location = NULL
-      WHERE id = ?
-    `;
-    try {
-      const result = await this.db!.run(query, [id]);
-      if (result.changes === 0) return false;
-      console.log(`Image location removed successfully for id ${id}.`);
-      return true;
-    } catch (err) {
-      console.error("Error removing image location:", err);
-      throw err;
-    }
-  }
-
-  public async getRandomData(): Promise<{
-    imageSrc: string;
-    userName: string;
-  }> {
-    await this.ensureInitialized();
-
-    const query = `
-      SELECT image_location, username
-      FROM users
-      WHERE image_location IS NOT NULL
-      ORDER BY RANDOM()
-      LIMIT 1
-    `;
-    try {
-      const row = (await this.db!.get(query)) as User;
-      if (row) {
-        return { imageSrc: row.image_location, userName: row.username };
-      } else {
-        return { imageSrc: "", userName: "" };
-      }
-    } catch (err) {
-      console.error("Error fetching random image location:", err);
-      throw err;
-    }
-  }
-
-  public async upsertStarRating(
+  async getUserViaPass(
     passKey: string,
-    newStar: string
-  ): Promise<void> {
-    await this.ensureInitialized();
+  ): Promise<{ id: string, username: string, pass_key: string } | null> {
+    const query = `
+      SELECT id, username, pass_key FROM users
+      WHERE pass_key = ?;
+    `
+    const row: User = await this.db.get(query, passKey)
+    return row || null
+  }
 
-    const selectQuery = `
-      SELECT stars FROM users WHERE pass_key = ?
-    `;
-    const updateQuery = `
-      UPDATE users SET stars = ? WHERE pass_key = ?
-    `;
-    try {
-      const row = (await this.db!.get(selectQuery, [passKey])) as User;
-      const currentStars = row?.stars || "";
-      const updatedStars = currentStars + newStar;
-      await this.db!.run(updateQuery, [updatedStars, passKey]);
-    } catch (err) {
-      console.error("Error updating star rating:", err);
-      throw err;
+  async getUserViaName(
+    username: string,
+  ): Promise<{ id: string, username: string, pass_key: string } | null> {
+    const query = `
+      SELECT id, username, pass_key FROM users
+      WHERE username = ?;
+    `
+    const row: User = await this.db.get(query, username)
+    return row || null
+  }
+
+  async createStar(userId: string, starRating: number): Promise<void> {
+    const query = `
+      INSERT INTO stars (user_id, star_rating)
+      VALUES (?, ?);
+    `
+    await this.db.run(query, userId, starRating)
+  }
+
+  async getStarsById(
+    userId: string,
+  ): Promise<Array<{ star_rating: number }>> {
+    const query = `
+      SELECT star_rating FROM stars
+      WHERE user_id = ?;
+    `
+    const rows: { star_rating: number }[] = await this.db.all(query, userId)
+    return rows
+  }
+
+  async addImage(userId: string, imageLocation: string): Promise<void> {
+    const query = `
+      INSERT INTO images (user_id, image_location)
+      VALUES (?, ?);
+    `
+    await this.db.run(query, userId, imageLocation)
+  }
+
+  async getImagesById(
+    userId: string,
+  ): Promise<Array<{ image_location: string }>> {
+    const query = `
+      SELECT image_location FROM images
+      WHERE user_id = ?;
+    `
+    const rows: { image_location: string }[] = await this.db.all(query, userId)
+    return rows
+  }
+
+  async deleteImages(userId: string): Promise<void> {
+    const query = `
+      DELETE FROM images WHERE user_id = ?;
+    `
+    await this.db.run(query, userId)
+  }
+
+  async getRandomImageLocation() {
+    const userQuery = `
+      SELECT user_id FROM images
+      ORDER BY RANDOM()
+      LIMIT 1;
+    `
+    const userRow: Images = await this.db.get(userQuery)
+    if (!userRow || !userRow.user_id) {
+      return null
     }
+
+    const userId = userRow.user_id
+
+    const imagesQuery = `
+    SELECT image_location FROM images
+    WHERE user_id = ?;
+  `
+    const imageRows: Images[] = await this.db.all(imagesQuery, userId)
+    const imageLocations = imageRows.map((row: Images) => row.image_location)
+    const user = await this.getUserViaId(userId)
+    return {
+      username: user?.username,
+      image_locations: imageLocations,
+    }
+  }
+
+  async close(): Promise<void> {
+    await this.db.close()
   }
 }
 
 export function generateRandomString(): string {
-  return crypto.randomBytes(10).toString("hex");
+  return crypto.randomBytes(10).toString('hex')
 }

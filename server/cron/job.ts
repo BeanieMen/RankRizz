@@ -1,14 +1,15 @@
 import { env } from 'process'
 import path from 'path'
 import fs from 'fs'
-import {UserDatabase} from '../db/database'
+import { UserDatabase } from '../db/database'
 import { defineCronHandler } from '#nuxt/cron'
 
 export default defineCronHandler(
   () => env.DELETION_TIME as string,
   async () => {
-    const db = UserDatabase.getInstance()
-    
+    const db = new UserDatabase()
+    await db.initialize()
+
     const directoryPath = path.resolve(process.cwd(), 'public/user-photos')
 
     try {
@@ -16,7 +17,8 @@ export default defineCronHandler(
       const folders = items.filter(item => item.isDirectory())
 
       folders.forEach(async (folder) => {
-        await db.removeImageLocation(folder.name)
+        // folder.name = user_id / id
+        await db.deleteImages(folder.name)
         const folderPath = path.join(directoryPath, folder.name)
         fs.rmSync(folderPath, { recursive: true, force: true })
         console.log(`Deleted folder: ${folderPath}`)

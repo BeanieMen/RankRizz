@@ -1,29 +1,32 @@
-import { UserDatabase, generateRandomString } from "../db/database";
+import { UserDatabase, generateRandomString } from '../db/database'
 
 export default defineEventHandler(async (event) => {
-  const dbInstance = UserDatabase.getInstance();
+  const db = new UserDatabase()
+  await db.initialize()
 
-  if (event.method !== "POST") {
-    return { passKey: null, username: null, error: "Invalid request method" };
+  if (event.method !== 'POST') {
+    return { passKey: null, username: null, error: 'Invalid request method' }
   }
 
-  const body = await readBody(event);
-  const username = body.username;
+  const body = await readBody(event)
+  const username = body.username
 
   if (!username) {
-    return { passKey: null, username: null, error: "Username is required" };
+    return { passKey: null, username: null, error: 'Username is required' }
   }
 
-  const passKey = generateRandomString();
-  const user = await dbInstance.createUser(username, passKey);
+  const existingUser = await db.getUserViaName(username)
+  if (existingUser) {
+    return { passKey: null, username: null, error: 'Username is already taken' }
+  }
+
+  const passKey = generateRandomString()
+  const id = generateRandomString()
+  const user = await db.createUser(id, username, passKey)
 
   if (!user) {
-    return {
-      passKey: null,
-      username: null,
-      error: "Username is already taken",
-    };
+    return { passKey: null, username: null, error: 'Failed to create user' }
   }
 
-  return { passKey: passKey, username: username, error: null };
-});
+  return { passKey, username, error: null }
+})

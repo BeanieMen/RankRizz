@@ -15,21 +15,38 @@
 
           <div class="space-y-6">
             <!-- Photo Carousel -->
-            <Carousel v-if="imageLocation !== ''" :slides="imageLocation.split(',')">
+            <Carousel
+              v-if="imageLocations.length > 0"
+              :slides="imageLocations"
+            >
               <template #default="{ slide }">
                 <div class="relative w-full h-0 pb-[56.25%]">
-                  <img :src="slide" alt="User Photo" class="absolute inset-0 w-full h-full object-contain rounded-lg shadow-md">
+                  <img
+                    :src="slide"
+                    alt="User Photo"
+                    class="absolute inset-0 w-full h-full object-contain rounded-lg shadow-md"
+                  >
                 </div>
               </template>
             </Carousel>
             <!-- File Upload -->
-            <div v-if="imageLocation.split(',').length < 3" class="text-center mt-6">
-              <label for="file-upload" class="block text-lg font-medium text-text mb-2">
+            <div
+              v-if="imageLocations.length < 3"
+              class="text-center mt-6"
+            >
+              <label
+                for="file-upload"
+                class="block text-lg font-medium text-text mb-2"
+              >
                 Upload Photos:
               </label>
-              <input id="file-upload" type="file"
+              <input
+                id="file-upload"
+                type="file"
                 class="block w-full text-text border border-gray-300 rounded-lg p-2"
-                accept=".jpeg, .jpg, .png, .webp" @change="handleFileUpload">
+                accept=".jpeg, .jpg, .png, .webp"
+                @change="handleFileUpload"
+              >
             </div>
 
             <div class="bg-gray-100 p-4 rounded-lg shadow-inner">
@@ -47,19 +64,29 @@
             <!-- Star Rating Section -->
             <div class="flex flex-col items-center mt-4">
               <h2 class="text-lg font-semibold text-text mb-2">
-                RizzRates ({{ user && user.stars ? user.stars.length : 0 }} reviews)
+                RizzRates ({{ starCount }} reviews)
               </h2>
-              <NuxtRating :read-only="true" :rating-size="30" :rating-value="rating" />
+              <NuxtRating
+                :read-only="true"
+                :rating-size="30"
+                :rating-value="rating"
+              />
               <h3 class="text-md text-text mb-2">
                 {{ rating.toFixed(2) }} out of 5 stars
               </h3>
             </div>
 
             <div class="mt-4">
-              <div v-if="uploadError" class="text-center text-red-500">
+              <div
+                v-if="uploadError"
+                class="text-center text-red-500"
+              >
                 Error: {{ uploadError }}
               </div>
-              <div v-else-if="uploadSuccess" class="text-center text-green-500">
+              <div
+                v-else-if="uploadSuccess"
+                class="text-center text-green-500"
+              >
                 Images uploaded successfully!
               </div>
             </div>
@@ -86,10 +113,8 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
-
 
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -100,15 +125,17 @@ const passKey = useCookie('passKey').value
 
 const user = ref<User | null>(null)
 const rating = ref<number>(0)
+const imageLocations = ref<string[]>([])
 const uploadError = ref<string | null>(null)
 const uploadSuccess = ref(false)
-
-const userData = useFetch(`/api/user/${passKey}`)
+let starCount = 0
+const userData = await useFetch(`/api/user/${passKey}`)
 if (userData.data.value) {
   user.value = userData.data.value.user
   rating.value = userData.data.value.rating ?? 0
+  imageLocations.value = userData.data.value.imageLocations ?? []
+  starCount = userData.data.value.starCount ?? 0
 }
-const imageLocation = user.value?.image_location ?? ''
 
 const handleFileUpload = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
@@ -136,14 +163,14 @@ const handleFileUpload = async (event: Event) => {
         body: formData,
       })
 
-      if (response.data.value?.message == "File uploaded successfully" ) {
+      if (response.data.value?.message == 'File uploaded successfully') {
         uploadSuccess.value = true
         setTimeout(() => {
           window.location.reload()
         }, 500)
       }
       else {
-        uploadError.value = response.data.value?.message ?? "Unknown error"
+        uploadError.value = response.data.value?.message ?? "Unknown Error"
       }
     }
     catch (error) {

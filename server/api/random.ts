@@ -1,12 +1,13 @@
-import { UserDatabase } from "../db/database";
+import { UserDatabase } from '../db/database'
 
 export default defineEventHandler(async (event) => {
-  if (event.method !== "GET") {
-    return { error: "Invalid request method" };
+  if (event.method !== 'GET') {
+    return { imageSrc: null, username: null }
   }
 
-  const dbInstance = UserDatabase.getInstance();
-  const randomData = await dbInstance.getRandomData();
+  const db = new UserDatabase()
+  await db.initialize()
 
-  return { imageSrc: randomData.imageSrc, userName: randomData.userName };
-});
+  const randomData = await db.getRandomImageLocation()
+  return { imageSrc: randomData?.image_locations, username: randomData?.username }
+})

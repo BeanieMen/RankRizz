@@ -48,9 +48,9 @@ const login = async () => {
   }
 
   try {
-    const response = useFetch(`/api/user/${passKey.value}`).data.value
+    const userData = await useFetch(`/api/user/${passKey.value}`)
 
-    if (response?.user) {
+    if (userData.data.value?.user) {
       errorMessage.value = 'Invalid passKey provided'
       return
     }
