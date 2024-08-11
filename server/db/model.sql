@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS stars (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  userId TEXT REFERENCES users(id),
+  imageId TEXT REFERENCES images(id),
   starReviewCount INTEGER CHECK (starReviewCount BETWEEN 1 AND 5)
 );
 
@@ -18,6 +18,6 @@ CREATE TABLE IF NOT EXISTS images (
 
 CREATE TABLE IF NOT EXISTS comments (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  userId TEXT REFERENCES users(id),
+  imageId TEXT REFERENCES images(id),
   comment TEXT
 );

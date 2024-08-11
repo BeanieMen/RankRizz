@@ -15,20 +15,21 @@ export default defineEventHandler(async (event) => {
     return { message: "No form data received" };
   }
 
-  const userId = form.find((field) => field.name === "userId")?.data?.toString();
   const starRating = Number(form.find((field) => field.name === "starRating")?.data?.toString());
   const comment = form.find((field) => field.name === "comment")?.data?.toString();
+  const imageSrc = form.find((field) => field.name === "imageSrc")?.data?.toString();
+  const imageId = await db.getImageIdBySrc(imageSrc!)
 
-  if (!userId || (!comment && isNaN(starRating))) {
+  if (!imageId || (!comment && isNaN(starRating))) {
     return { message: "Invalid form data" };
   }
 
   if (comment) {
-    await db.addComment(userId, comment);
+    await db.addComment(imageId.id, comment);
   }
 
   if (!isNaN(starRating)) {
-    await db.createStar(userId, starRating);
+    await db.createStar(imageId.id, starRating);
   }
 
   return { message: "Successfully uploaded ratings" };

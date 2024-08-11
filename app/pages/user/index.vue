@@ -27,8 +27,9 @@
               </template>
 
               <template #indicator="{ onClick, page, active }">
+
                 <UButton :label="String(page)" :variant="active ? 'solid' : 'outline'" size="2xs"
-                  class="rounded-full min-w-6 justify-center" @click="onClick(page)" />
+                  class="rounded-full min-w-6 justify-center" @click="pageRef = page; onClick(page);" />
               </template>
             </UCarousel>
 
@@ -46,9 +47,6 @@
               </p>
               <p>
                 <strong>Username:</strong> {{ user?.username }}
-              </p>
-              <p>
-                <strong>Pass Key:</strong> {{ user?.passKey }}
               </p>
             </div>
 
@@ -99,9 +97,9 @@ import { useCookie } from '#app'
 import type { User } from '~~/server/db/database'
 
 const passKey = useCookie('passKey').value
-
+const pageRef = ref(1)
 const user = ref<User | null>(null)
-const rating = ref<number>(0)
+const rating = ref<number>(1)
 const imageLocations = ref<string[]>([])
 const comments = ref<string[]>([])
 const uploadError = ref<string | null>(null)
@@ -111,11 +109,19 @@ let starReviewCount = 0
 const userData = await $fetch(`/api/user/${passKey}`)
 if (userData) {
   user.value = userData.user
-  rating.value = userData.rating ?? 0
+  rating.value = userData.rating[pageRef.value - 1] ?? 0
   imageLocations.value = userData.imageLocations ?? []
-  starReviewCount = userData.starReviewCount ?? 0
-  comments.value = userData.comments ?? []
+  starReviewCount = userData.starReviewCount[pageRef.value - 1] ?? 0
+  comments.value = userData.comments[pageRef.value - 1] ?? []
 }
+
+watch(pageRef, (newPage) => {
+  if (userData) {
+    rating.value = userData.rating[newPage - 1] ?? 0
+    starReviewCount = userData.starReviewCount[newPage - 1] ?? 0
+    comments.value = userData.comments[newPage - 1] ?? []
+  }
+})
 
 const handleFileUpload = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
@@ -159,4 +165,5 @@ const handleFileUpload = async (event: Event) => {
     }
   }
 }
+
 </script>
