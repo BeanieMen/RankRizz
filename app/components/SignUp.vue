@@ -63,7 +63,7 @@ const submitForm = async () => {
   successLink.value = ''
 
   try {
-    const response = await useFetch('/api/generate-account', {
+    const response = await $fetch('/api/generate-account', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -71,10 +71,10 @@ const submitForm = async () => {
       body: JSON.stringify({ username: username.value }),
     })
 
-    const data = response.data.value
+    const data = response as {error: string | null, passKey: string | undefined, username: string | undefined}
     if (data) {
-      if (data?.error) {
-        errorMessage.value = data.error
+      if (response.error) {
+        errorMessage.value = data.error!
       }
       else {
         passKeyCookie.value = data.passKey

@@ -131,32 +131,36 @@ export class UserDatabase {
     await this.db.run(query, userId)
   }
 
-  async getRandomImageLocation() {
+  async getRandomImageLocation(fetchedUserIds: Set<string>) {
     const userQuery = `
       SELECT userId FROM images
+      WHERE userId NOT IN (${Array.from(fetchedUserIds).map(() => '?').join(',')})
       ORDER BY RANDOM()
       LIMIT 1;
     `
-    const userRow: Images = await this.db.get(userQuery)
+  
+    const userRow: Images = await this.db.get(userQuery, ...Array.from(fetchedUserIds))
     if (!userRow || !userRow.userId) {
-      return null
+      return null 
     }
-
+  
     const userId = userRow.userId
-
+  
     const imagesQuery = `
-    SELECT imageLocation FROM images
-    WHERE userId = ?;
-  `
+      SELECT imageLocation FROM images
+      WHERE userId = ?;
+    `
     const imageRows: Images[] = await this.db.all(imagesQuery, userId)
     const imageLocations = imageRows.map((row: Images) => row.imageLocation)
     const user = await this.getUserViaId(userId)
+    
     return {
       username: user?.username,
       imageLocations: imageLocations,
       userId: userId
     }
   }
+  
 
   async addComment(userId: string, comment: string): Promise<void> {
     const query = `

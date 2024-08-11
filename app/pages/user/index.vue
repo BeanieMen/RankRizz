@@ -108,13 +108,13 @@ const uploadError = ref<string | null>(null)
 const uploadSuccess = ref(false)
 let starReviewCount = 0
 
-const userData = await useFetch(`/api/user/${passKey}`)
-if (userData.data.value) {
-  user.value = userData.data.value.user
-  rating.value = userData.data.value.rating ?? 0
-  imageLocations.value = userData.data.value.imageLocations ?? []
-  starReviewCount = userData.data.value.starReviewCount ?? 0
-  comments.value = userData.data.value.comments ?? []
+const userData = await $fetch(`/api/user/${passKey}`)
+if (userData) {
+  user.value = userData.user
+  rating.value = userData.rating ?? 0
+  imageLocations.value = userData.imageLocations ?? []
+  starReviewCount = userData.starReviewCount ?? 0
+  comments.value = userData.comments ?? []
 }
 
 const handleFileUpload = async (event: Event) => {
@@ -138,19 +138,19 @@ const handleFileUpload = async (event: Event) => {
     formData.append('userId', user.value?.id)
 
     try {
-      const response = await useFetch("/api/upload", {
+      const response = await $fetch("/api/upload", {
         method: 'POST',
         body: formData,
       })
 
-      if (response.data.value?.message == 'File uploaded successfully') {
+      if (response?.message == 'File uploaded successfully') {
         uploadSuccess.value = true
         setTimeout(() => {
           window.location.reload()
         }, 500)
       }
       else {
-        uploadError.value = response.data.value?.message ?? "Unknown Error"
+        uploadError.value = response?.message ?? "Unknown Error"
       }
     }
     catch (error) {

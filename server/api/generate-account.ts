@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
-  const username = body.username
+  const username = body.username as string
 
   if (!username) {
     return { error: 'Username is required' }
