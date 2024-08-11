@@ -19,7 +19,7 @@
                 <div class="text-center">
                     <h1 class="text-2xl md:text-3xl font-bold mb-4">
                         Username: <span class="text-accent">{{ randomUser }}</span>
-                        <h2 class="text-md md:text-lg font-semibold mt-2">Rating image photo number: {{ pageRef }}</h2>
+                        <h2 class="text-md md:text-lg font-semibold mt-2">Rating image number: {{ pageRef }}</h2>
 
                     </h1>
                 </div>

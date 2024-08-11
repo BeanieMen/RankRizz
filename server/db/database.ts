@@ -40,7 +40,7 @@ export class UserDatabase {
     if (await this.getUserViaId(id)) return null;
 
     const query = `
-      INSERT INTO users (id, username, passKey)
+      INSERT INTO Users (id, username, passKey)
       VALUES (?, ?, ?);
     `;
     await this.db.run(query, id, username, passKey);
@@ -49,7 +49,7 @@ export class UserDatabase {
 
   async getUserViaId(id: string): Promise<User | null> {
     const query = `
-      SELECT id, username, passKey FROM users
+      SELECT id, username, passKey FROM Users
       WHERE id = ?;
     `;
     return (await this.db.get(query, id)) || null;
@@ -57,7 +57,7 @@ export class UserDatabase {
 
   async getUserViaPass(passKey: string): Promise<User | null> {
     const query = `
-      SELECT id, username, passKey FROM users
+      SELECT id, username, passKey FROM Users
       WHERE passKey = ?;
     `;
     return (await this.db.get(query, passKey)) || null;
@@ -65,7 +65,7 @@ export class UserDatabase {
 
   async getUserViaName(username: string): Promise<User | null> {
     const query = `
-      SELECT id, username, passKey FROM users
+      SELECT id, username, passKey FROM Users
       WHERE username = ?;
     `;
     return (await this.db.get(query, username)) || null;
@@ -73,7 +73,7 @@ export class UserDatabase {
 
   async createStar(imageId: string, starRating: number): Promise<void> {
     const query = `
-      INSERT INTO stars (imageId, starReviewCount)
+      INSERT INTO Stars (imageId, starReviewCount)
       VALUES (?, ?);
     `;
     await this.db.run(query, imageId, starRating);
@@ -81,7 +81,7 @@ export class UserDatabase {
 
   async getStarsById(imageId: string): Promise<Array<{ starReviewCount: number }>> {
     const query = `
-      SELECT starReviewCount FROM stars
+      SELECT starReviewCount FROM Stars
       WHERE imageId = ?;
     `;
     return this.db.all(query, imageId);
@@ -89,7 +89,7 @@ export class UserDatabase {
 
   async addImage(userId: string, imageLocation: string): Promise<void> {
     const query = `
-      INSERT INTO images (userId, imageLocation)
+      INSERT INTO Images (userId, imageLocation)
       VALUES (?, ?);
     `;
     await this.db.run(query, userId, imageLocation);
@@ -97,7 +97,7 @@ export class UserDatabase {
 
   async getImagesById(userId: string): Promise<Array<{ imageLocation: string }>> {
     const query = `
-      SELECT imageLocation FROM images
+      SELECT imageLocation FROM Images
       WHERE userId = ?;
     `;
     return this.db.all(query, userId);
@@ -105,7 +105,7 @@ export class UserDatabase {
 
   async getImageIdBySrc(imageSrc: string): Promise<{ id: string }> {
     const query = `
-      SELECT id FROM images
+      SELECT id FROM Images
       WHERE imageLocation = ?;
     `;
     return this.db.get(query, imageSrc);
@@ -113,14 +113,14 @@ export class UserDatabase {
 
   async deleteImages(userId: string): Promise<void> {
     const query = `
-      DELETE FROM images WHERE userId = ?;
+      DELETE FROM Images WHERE userId = ?;
     `;
     await this.db.run(query, userId);
   }
 
   async getRandomImageLocation(fetchedUserIds: Set<string>) {
     const userQuery = `
-      SELECT userId FROM images
+      SELECT userId FROM Images
       WHERE userId NOT IN (${Array.from(fetchedUserIds).map(() => '?').join(',')})
       ORDER BY RANDOM()
       LIMIT 1;
@@ -130,7 +130,7 @@ export class UserDatabase {
     if (!userRow?.userId) return null;
 
     const imagesQuery = `
-      SELECT imageLocation FROM images
+      SELECT imageLocation FROM Images
       WHERE userId = ?;
     `;
     const imageRows: {imageLocation: string}[] = await this.db.all(imagesQuery, userRow.userId);
@@ -146,7 +146,7 @@ export class UserDatabase {
 
   async addComment(imageId: string, comment: string): Promise<void> {
     const query = `
-      INSERT INTO comments (imageId, comment)
+      INSERT INTO Comments (imageId, comment)
       VALUES (?, ?);
     `;
     await this.db.run(query, imageId, comment);
@@ -154,7 +154,7 @@ export class UserDatabase {
 
   async getCommentsById(imageId: string): Promise<Array<{ comment: string }>> {
     const query = `
-      SELECT comment FROM comments
+      SELECT comment FROM Comments
       WHERE imageId = ?;
     `;
     return this.db.all(query, imageId);

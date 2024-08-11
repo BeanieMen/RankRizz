@@ -7,7 +7,7 @@ Fetches user information based on the provided pass.
 
 **Response:**
 - `user` (User) : User details.
-- `imageLocations` (string[]) : List of images uploaded by the user.
+- `imageLocations` (string[]) : List of images uploaded by the user in the form of paths.
 - `rating` (number[]) : Average rating given to each photo of the user
 - `starReviewCount` (number[]) : Total number of stars given to each photo of the user.
 - `comments` (string[][]) : The comments given to each photo of the user.
