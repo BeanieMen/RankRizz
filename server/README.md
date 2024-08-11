@@ -65,18 +65,31 @@ Content-Type: application/json
 ```
 
 
-### `GET /random`
+### `POST /random`
 
 Fetches a random username and all associated image locations.
 
-**Respone:**
-- `username` (string) : The random username.
-- `imageLocations` (string[]) : List of images associated with the username.
-- `userId` (string) : The random user id.
+**Request Body:**
+- `fetchedUserIds` (string[]): The user id wished to be excluded from being fetched randomly
 
-**Example Request and Response:**
+**Respone:**
+- `username` (string) : The unique random username.
+- `imageLocations` (string[]) : List of images associated with the username.
+- `userId` (string) : The unqiue random user id.
+
+
+**Example Reques**
+**Example Request:**
 ```http
-GET /random
+POST /random
+Content-Type: application/json
+{
+  "fetchedUserIds": ["exampleId1", "exampleId2"]
+}
+```
+
+**Example Response:**
+```http
 {
   "username": "randomUser",
   "imageLocations": [
