@@ -139,3 +139,7 @@ The body will be in the form of formdata
     "message":  "Successfully uploaded ratings" 
 }
 ```
+
+### `Database and API Relations`
+**For a visual representation of the relationships between the database and API routes, refer to the UML diagram below:**
+![backend](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/BeanieMen/RankRizz/master/server/model.iuml)
