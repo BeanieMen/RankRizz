@@ -1,0 +1,83 @@
+@startuml
+!define RECTANGLE class
+!define TABLE class
+!define PK primary_key
+!define FK foreign_key
+
+RECTANGLE users {
+  +id: TEXT <<PK>>
+  +username: TEXT
+  +passKey: TEXT
+}
+
+RECTANGLE stars {
+  +id: INTEGER <<PK>>
+  +imageId: TEXT <<FK imageId>>
+  +starReviewCount: INTEGER
+}
+
+RECTANGLE images {
+  +id: INTEGER <<PK>>
+  +userId: TEXT <<FK userId>>
+  +imageLocation: TEXT
+}
+
+RECTANGLE comments {
+  +id: INTEGER <<PK>>
+  +imageId: TEXT <<FK imageId>>
+  +comment: TEXT
+}
+
+RECTANGLE API_GenerateAccount {
+  +POST /generate-account
+}
+
+RECTANGLE API_Random {
+  +POST /random
+}
+
+RECTANGLE API_ReceiveRating {
+  +POST /receive-rating
+}
+
+RECTANGLE API_Upload {
+  +POST /upload
+}
+
+RECTANGLE API_GetUser {
+  +GET /user/[pass]
+}
+
+RECTANGLE Nuxt_Server {
+  +Processes requests
+}
+
+users --o{ images : "has"
+images --o{ stars : "reviews"
+images --o{ comments : "has"
+
+API_GenerateAccount --> users : "Creates user"
+API_GenerateAccount --> users : "Check username availability"
+
+API_Random --> images : "Fetches random image locations"
+API_Random --> users : "Fetches user info"
+
+API_ReceiveRating --> images : "Fetch image id by src"
+API_ReceiveRating --> comments : "Add comment with image id"
+API_ReceiveRating --> stars : "Create star rating with image id"
+
+API_Upload --> images : "Add image with user id"
+API_Upload --> Nuxt_Server : "Saves image to\nuser-photos/[userId]/\n[userId_time].webp"
+
+API_GetUser --> users : "Fetch user via passKey"
+API_GetUser --> images : "Fetch images by user id"
+API_GetUser --> comments : "Fetch comments by image id"
+API_GetUser --> stars : "Fetch star ratings by image id"
+
+Nuxt_Server --> API_GenerateAccount : "Sends username"
+Nuxt_Server --> API_Random : "Sends fetchedUserIds to be excluded\n from being fetched again"
+Nuxt_Server --> API_ReceiveRating : "Sends starRating,\ncomment, imageSrc"
+Nuxt_Server --> API_Upload : "Sends userId, image file"
+Nuxt_Server --> API_GetUser : "PassKey parsed from URL"
+
+@enduml
