@@ -8,9 +8,9 @@ Fetches user information based on the provided pass.
 **Response:**
 - `user` (User) : User details.
 - `imageLocations` (string[]) : List of images uploaded by the user.
-- `rating` (string) : Average rating given to the user.
-- `starReviewCount` (string) : Total number of stars given to the user.
-- `comments` (string[]) : The comments given to the user.
+- `rating` (number[]) : Average rating given to each photo of the user
+- `starReviewCount` (number[]) : Total number of stars given to each photo of the user.
+- `comments` (string[][]) : The comments given to each photo of the user.
 
 **Example Request and Response:**
 ```http
@@ -25,11 +25,11 @@ GET /user/somepass
     "/images/user1/photo1.png",
     "/images/user1/photo2.png"
   ],
-  "rating": 4.5,
-  "starReviewCount": 20,
+  "rating": [2,3]
+  "starReviewCount": [20, 2],
   "comments": [
-  "unmatched rizz",
-  "absolute L"
+  ["unmatched rizz"],
+  ["absolute L"]
   ]
 }
 ```
@@ -129,7 +129,7 @@ The body will be in the form of formdata
 
 **Request Body:**
 
-- `userId` (string) : The ID of the user.
+- `imageSrc` (string) : The image src of the photo being rated
 - `starRating` (string): The recieved comment.
 - `comment` (string) : The recieved star rating.
 
@@ -142,4 +142,6 @@ The body will be in the form of formdata
 
 ### `Database and API Relations`
 **For a visual representation of the relationships between the database and API routes, refer to the UML diagram below:**
+<br/>
+<br/>
 ![backend](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/BeanieMen/RankRizz/master/server/model.iuml)
