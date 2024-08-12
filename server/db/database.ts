@@ -12,7 +12,6 @@ export interface User {
 interface Images {
   id: number;
   userId: string;
-  imageLocation: string;
 }
 
 export class UserDatabase {
@@ -93,31 +92,14 @@ export class UserDatabase {
     return this.db.all(query, imageId);
   }
 
-  async addImage(userId: string, imageLocation: string): Promise<void> {
+  async addImage(userId: string, id: string): Promise<void> {
     const query = `
-      INSERT INTO Images (userId, imageLocation)
+      INSERT INTO Images (userId, id)
       VALUES (?, ?);
     `;
-    await this.db.run(query, userId, imageLocation);
+    await this.db.run(query, userId, id);
   }
 
-  async getImagesById(
-    userId: string
-  ): Promise<Array<{ imageLocation: string }>> {
-    const query = `
-      SELECT imageLocation FROM Images
-      WHERE userId = ?;
-    `;
-    return this.db.all(query, userId);
-  }
-
-  async getImageIdBySrc(imageSrc: string, p0?: void): Promise<{ id: string }> {
-    const query = `
-      SELECT id FROM Images
-      WHERE imageLocation = ?;
-    `;
-    return this.db.get(query, imageSrc);
-  }
 
   async deleteImages(userId: string): Promise<void> {
     const query = `
@@ -126,7 +108,16 @@ export class UserDatabase {
     await this.db.run(query, userId);
   }
 
-  async getRandomImageLocation(fetchedUserIds: Set<string>) {
+  async getImageIds(
+    userId: string
+  ): Promise<Array<{ id: string }>> {
+    const query = `
+      SELECT id FROM Images
+      WHERE userId = ?;
+    `;
+    return this.db.all(query, userId);
+  }
+  async getRandomImageIds(fetchedUserIds: Set<string>) {
     const userQuery = `
       SELECT userId FROM Images
       WHERE userId NOT IN (${Array.from(fetchedUserIds)
@@ -143,19 +134,19 @@ export class UserDatabase {
     if (!userRow?.userId) return null;
 
     const imagesQuery = `
-      SELECT imageLocation FROM Images
+      SELECT id FROM Images
       WHERE userId = ?;
     `;
-    const imageRows: { imageLocation: string }[] = await this.db.all(
+    const imageRows: { id: string }[] = await this.db.all(
       imagesQuery,
       userRow.userId
     );
-    const imageLocations = imageRows.map((row) => row.imageLocation);
+    const imageIds = imageRows.map((row) => row.id);
     const user = await this.getUserViaId(userRow.userId);
 
     return {
       username: user?.username,
-      imageLocations,
+      imageIds,
       userId: userRow.userId,
     };
   }

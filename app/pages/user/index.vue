@@ -15,7 +15,7 @@
 
           <div class="space-y-6">
 
-            <UCarousel :items="imageLocations" :ui="{
+            <UCarousel :items="images" :ui="{
               item: 'basis-full',
               container: 'rounded-lg',
               indicators: {
@@ -33,7 +33,7 @@
               </template>
             </UCarousel>
 
-            <div v-if="imageLocations.length < 3" class="text-center mt-6">
+            <div v-if="imageIds.length < 3" class="text-center mt-6">
               <label for="file-upload" class="block text-lg font-medium mb-2">
                 Upload Photos:
               </label>
@@ -100,19 +100,21 @@ const passKey = useCookie('passKey').value
 const pageRef = ref(1)
 const user = ref<User | null>(null)
 const rating = ref<number>(1)
-const imageLocations = ref<string[]>([])
+const imageIds = ref<string[]>([])
 const comments = ref<string[]>([])
 const uploadError = ref<string | null>(null)
 const uploadSuccess = ref(false)
+const images: string[] = [] 
 let starReviewCount = 0
 
 const userData = await $fetch(`/api/user/${passKey}`)
 if (userData) {
   user.value = userData.user
   rating.value = userData.rating[pageRef.value - 1] ?? 0
-  imageLocations.value = userData.imageLocations ?? []
+  imageIds.value = userData.imageIds ?? []
   starReviewCount = userData.starReviewCount[pageRef.value - 1] ?? 0
   comments.value = userData.comments[pageRef.value - 1] ?? []
+  imageIds.value.forEach(v => {images.push(`/user-photos/${user.value?.id}/id_${v}.webp`)})
 }
 
 watch(pageRef, (newPage) => {

@@ -7,7 +7,7 @@ Fetches user information based on the provided pass.
 
 **Response:**
 - `user` (User) : User details.
-- `imageLocations` (string[]) : List of images uploaded by the user in the form of paths.
+- `imageIds` (string[]) : List of images uploaded by the user in the form of their ids.
 - `rating` (number[]) : Average rating given to each photo of the user
 - `starReviewCount` (number[]) : Total number of stars given to each photo of the user.
 - `comments` (string[][]) : The comments given to each photo of the user.
@@ -21,9 +21,9 @@ GET /user/somepass
     "username": "exampleUser",
     "passKey" : "examplePass"
   },
-  "imageLocations": [
-    "/images/user1/photo1.png",
-    "/images/user1/photo2.png"
+  "imageIds": [
+    "exampleId1",
+    "exampleId2"
   ],
   "rating": [2,3]
   "starReviewCount": [20, 2],
@@ -74,7 +74,7 @@ Fetches a random username and all associated image locations.
 
 **Respone:**
 - `username` (string) : The unique random username.
-- `imageLocations` (string[]) : List of images associated with the username.
+- `imageIds` (string[]) : List of image ids associated with the username.
 - `userId` (string) : The unqiue random user id.
 
 
@@ -92,9 +92,9 @@ Content-Type: application/json
 ```http
 {
   "username": "randomUser",
-  "imageLocations": [
-    "/images/randomUser/photo1.png",
-    "/images/randomUser/photo2.png"
+  "imageIds": [
+    "exampleId1",
+    "exampleId2"
   ],
   "userId": "randomId"
 }

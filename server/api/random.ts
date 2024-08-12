@@ -13,10 +13,10 @@ export default defineEventHandler(async (event) => {
   const fetchedUserIds: string[] = body.fetchedUserIds || []
   const fetchedUserIdsSet = new Set(fetchedUserIds)
 
-  const randomData = await db.getRandomImageLocation(fetchedUserIdsSet)
+  const randomData = await db.getRandomImageIds(fetchedUserIdsSet)
   
   return {
-    imageLocations: randomData?.imageLocations,
+    imageIds: randomData?.imageIds,
     username: randomData?.username,
     userId: randomData?.userId
   }

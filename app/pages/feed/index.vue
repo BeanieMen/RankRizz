@@ -5,9 +5,9 @@
   <div v-else @scroll="handleScroll" class="h-screen overflow-auto flex flex-col">
     <div class="flex-1">
       <Feed 
-        v-for="(user, index) in users" 
-        :key="index" 
-        :image-locations="user.imageLocations"
+        v-for="user in users" 
+        :key="user.userId" 
+        :image-paths="user.imagePath"
         :random-user="user.username" 
       />
     </div>
@@ -18,9 +18,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
+import { useThrottleFn } from '@vueuse/core'
 
-const users = ref<{ imageLocations: string[], username: string, userId: string }[]>([])
+const users = ref<{ imageIds: string[], username: string, userId: string, imagePath: string[] }[]>([])
 const allUsersFetched = ref(false)
 const noUsersAvailable = ref(false)
 const fetchedUserIds = ref<Set<string>>(new Set())
@@ -35,15 +36,14 @@ async function fetchRandomUsers() {
       body: JSON.stringify({ fetchedUserIds: Array.from(fetchedUserIds.value) }),
     })
 
-    const randomData = response
-
-    if (randomData && randomData.userId) {
+    if (response && response.userId) {
       noUsersAvailable.value = false
-      fetchedUserIds.value.add(randomData.userId)
+      fetchedUserIds.value.add(response.userId)
       users.value.push({
-        imageLocations: randomData.imageLocations ?? [],
-        username: randomData.username ?? '',
-        userId: randomData.userId ?? ''
+        imageIds: response.imageIds ?? [],
+        username: response.username ?? '',
+        userId: response.userId ?? '',
+        imagePath: response.imageIds?.map(id => `/user-photos/${response.userId}/id_${id}.webp`) ?? [],
       })
     } else {
       allUsersFetched.value = true
@@ -53,17 +53,16 @@ async function fetchRandomUsers() {
   }
 }
 
-async function handleScroll(event: Event) {
+const handleScroll = useThrottleFn(async (event: Event) => {
   if (allUsersFetched.value) return
 
   const target = event.target as HTMLElement
   if (target.scrollHeight - target.scrollTop <= target.clientHeight + 5) {
     await fetchRandomUsers()
   }
-}
+}, 300)
 
-onMounted(async () => {
-  await fetchRandomUsers()
-  await fetchRandomUsers()
-})
+await fetchRandomUsers()
+await fetchRandomUsers()
+
 </script>

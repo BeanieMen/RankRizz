@@ -4,7 +4,7 @@
             class="w-full max-w-5xl p-6 rounded-lg flex flex-col md:grid md:grid-cols-2 md:gap-x-36 place-items-center">
 
             <div class="w-full md:w-auto flex justify-center mb-6 md:mb-0">
-                <UCarousel :items="imageLocations" :ui="carouselUI" indicators class="w-full md:w-[30rem] mx-auto">
+                <UCarousel :items="imagePaths" :ui="carouselUI" indicators class="w-full md:w-[30rem] mx-auto">
                     <template #default="{ item }">
                         <img :src="item" class="w-full" draggable="false" />
                     </template>
@@ -55,7 +55,7 @@
 import { ref } from 'vue'
 
 const props = defineProps<{
-    imageLocations: string[],
+    imagePaths: string[],
     randomUser: string,
 }>()
 
@@ -84,7 +84,7 @@ function handleIndicatorClick(page: number, onClick: (page: number) => void) {
 
 async function submitFeedback() {
     const formData = new FormData()
-    formData.append('imageSrc', props.imageLocations[pageRef.value - 1]!)
+    formData.append('imageSrc', props.imagePaths[pageRef.value - 1]!)
 
     if (rating.value > 0) {
         formData.append('starRating', String(rating.value))

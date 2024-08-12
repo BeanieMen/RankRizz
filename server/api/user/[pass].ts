@@ -15,16 +15,10 @@ export default defineEventHandler(async (event) => {
     return null;
   }
 
-  const imageLocations = (await db.getImagesById(user.id)).map(
-    (obj) => obj.imageLocation
+  const imageIds = (await db.getImageIds(user.id)).map(
+    (obj) => obj.id
   );
   const starReviewCounts: number[] = [];
-  const imageIds = await Promise.all(
-    imageLocations.map(async (imageLocation) => {
-      const image = await db.getImageIdBySrc(imageLocation);
-      return image?.id ?? "";
-    })
-  );
 
   const comments = await Promise.all(
     imageIds.map(async (imageId) => {
@@ -46,7 +40,7 @@ export default defineEventHandler(async (event) => {
   return {
     user,
     rating: ratings,
-    imageLocations,
+    imageIds,
     starReviewCount: starReviewCounts,
     comments,
   };
