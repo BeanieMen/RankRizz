@@ -1,32 +1,46 @@
 import { UserDatabase } from "~~/server/db/database";
+import { setResponseStatus } from "h3";
 
 export default defineEventHandler(async (event) => {
-  if (event.method !== "GET") {
-    return null;
-  }
-
   const db = await UserDatabase.getInstance();
   const passKey = getRouterParam(event, "pass") || "";
   const user = await db.getUserViaPass(passKey);
 
   if (!user) {
-    return null;
+    setResponseStatus(event, 404);
+    return { error: "User not found" };
   }
 
-  const imageIds = (await db.getImageIds(user.id)).map((obj) => obj.id);
-  const comments = await getCommentsForImages(db, imageIds);
-  const { ratings, starRatingTotals } = await getStarRatingsForImages(db, imageIds);
+  try {
+    const imageIds = (await db.getImageIds(user.id)).map((obj) => obj.id);
+    const comments = await getCommentsForImages(db, imageIds);
+    const { ratings, starRatingTotals } = await getStarRatingsForImages(
+      db,
+      imageIds
+    );
 
-  return {
-    user,
-    starRatingAverages: ratings,
-    imageIds,
-    starRatingTotals,
-    comments,
-  };
+    setResponseStatus(event, 200);
+    return {
+      error: null,
+      data: {
+        user,
+        starRatingAverages: ratings,
+        imageIds,
+        starRatingTotals,
+        comments,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    setResponseStatus(event, 500);
+    return { error: "Error fetching user data" };
+  }
 });
 
-async function getCommentsForImages(db: UserDatabase, imageIds: string[]): Promise<string[][]> {
+async function getCommentsForImages(
+  db: UserDatabase,
+  imageIds: string[]
+): Promise<string[][]> {
   return Promise.all(
     imageIds.map(async (imageId) => {
       const commentsData = await db.getCommentsById(imageId);
@@ -35,7 +49,10 @@ async function getCommentsForImages(db: UserDatabase, imageIds: string[]): Promi
   );
 }
 
-async function getStarRatingsForImages(db: UserDatabase, imageIds: string[]): Promise<{ ratings: number[], starRatingTotals: number[] }> {
+async function getStarRatingsForImages(
+  db: UserDatabase,
+  imageIds: string[]
+): Promise<{ ratings: number[]; starRatingTotals: number[] }> {
   const ratings: number[] = [];
   const starRatingTotals: number[] = [];
 

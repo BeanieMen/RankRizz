@@ -25,19 +25,9 @@
                 </div>
 
                 <div class="flex flex-col items-center mb-6">
-                    <NuxtRating 
-                        :read-only="false"
-                        :rating-size="24"                        
-                        :rating-value="rating"         
-                        border-color="#db8403"
-                        active-color="#ffa41c" 
-                        inactive-color="#111827" 
-                        :rating-step="0.5" 
-                        :rating-level="10"
-                        :rating-count="10"
-                        :rounded-corners="true"
-                        :border-width="5"
-                        @rating-selected="updateRating"
+                    <NuxtRating :read-only="false" :rating-size="24" :rating-value="rating" border-color="#db8403"
+                        active-color="#ffa41c" inactive-color="#111827" :rating-step="0.5" :rating-level="10"
+                        :rating-count="10" :rounded-corners="true" :border-width="5" @rating-selected="updateRating"
                         class="bg-background" />
                 </div>
 
@@ -110,11 +100,10 @@ async function submitFeedback() {
         method: 'POST',
         body: formData,
     })
-
-    if (response.message === "Successfully uploaded ratings") {
+    if (!response.error) {
         setStatusMessage("Successfully rated!", "text-green-500")
     } else {
-        setStatusMessage(response.message, "text-red-500")
+        setStatusMessage(response.error, "text-red-500")
     }
 }
 

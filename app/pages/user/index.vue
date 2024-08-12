@@ -107,21 +107,21 @@ const uploadSuccess = ref(false)
 const images: string[] = []
 let starRatingTotal = 0
 
-const userData = await $fetch(`/api/user/${passKey}`)
-if (userData) {
-  user.value = userData.user
-  rating.value = userData.starRatingAverages[pageRef.value - 1] ?? 0
-  imageIds.value = userData.imageIds ?? []
-  starRatingTotal = userData.starRatingTotals[pageRef.value - 1] ?? 0
-  comments.value = userData.comments[pageRef.value - 1] ?? []
+const response = await $fetch(`/api/user/${passKey}`)
+if ('data' in response) {
+  user.value = response.data.user
+  rating.value = response.data.starRatingAverages[pageRef.value - 1] ?? 0
+  imageIds.value = response.data.imageIds ?? []
+  starRatingTotal = response.data.starRatingTotals[pageRef.value - 1] ?? 0
+  comments.value = response.data.comments[pageRef.value - 1] ?? []
   imageIds.value.forEach(v => { images.push(`/user-photos/${user.value?.id}/id_${v}.webp`) })
 }
 
 watch(pageRef, (newPage) => {
-  if (userData) {
-    rating.value = userData.starRatingAverages[newPage - 1] ?? 0
-    starRatingTotal = userData.starRatingTotals[newPage - 1] ?? 0
-    comments.value = userData.comments[newPage - 1] ?? []
+  if ('data' in response) {
+    rating.value = response.data.starRatingAverages[newPage - 1] ?? 0
+    starRatingTotal = response.data.starRatingTotals[newPage - 1] ?? 0
+    comments.value = response.data.comments[newPage - 1] ?? []
   }
 })
 
@@ -150,14 +150,14 @@ const handleFileUpload = async (event: Event) => {
         body: formData,
       })
 
-      if (response?.message == 'File uploaded successfully') {
+      if ('message' in response) {
         uploadSuccess.value = true
         setTimeout(() => {
           window.location.reload()
         }, 500)
       }
       else {
-        uploadError.value = response?.message ?? "Unknown Error"
+        uploadError.value = response.error ?? "Unknown Error"
       }
     }
     catch (error) {

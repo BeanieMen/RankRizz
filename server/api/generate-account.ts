@@ -1,38 +1,40 @@
-import { UserDatabase, generateRandomString } from '../db/database'
+import { defineEventHandler, readBody, getRequestHeader, setResponseStatus } from "h3";
+import { UserDatabase, generateRandomString } from "../db/database";
 
 export default defineEventHandler(async (event) => {
-  if (event.method !== 'POST') {
-    return { error: 'Invalid request method' }
-  }
-
-  const db = await UserDatabase.getInstance()
-  const body = await readBody(event)
-  const username = body.username as string
-  const ipAddress = getRequestHeader(event, 'x-forwarded-for') ?? ""
+  const db = await UserDatabase.getInstance();
+  const body = await readBody(event);
+  const username = body.username as string;
+  const ipAddress = getRequestHeader(event, "x-forwarded-for") ?? "";
 
   if (!username) {
-    return { error: 'Username is required' }
+    setResponseStatus(event, 400);
+    return { error: "Username is required" };
   }
 
-  const ipLookup = await db.getIpLookupByIpAddress(ipAddress)
-  // if (ipLookup) {
-  //   return { error: 'An account is already associated with this IP address' }
-  // }
+  const ipLookup = await db.getIpLookupByIpAddress(ipAddress);
+  if (ipLookup) {
+    setResponseStatus(event, 409);
+    return { error: "An account is already associated with this IP address" };
+  }
 
-  const existingUser = await db.getUserViaName(username)
+  const existingUser = await db.getUserViaName(username);
   if (existingUser) {
-    return { error: 'Username is already taken' }
+    setResponseStatus(event, 409);
+    return { error: "Username is already taken" };
   }
 
-  const passKey = generateRandomString()
-  const id = generateRandomString()
-  const user = await db.createUser(id, username, passKey)
+  const passKey = generateRandomString();
+  const id = generateRandomString();
+  const user = await db.createUser(id, username, passKey);
 
   if (!user) {
-    return { error: 'Failed to create user' }
+    setResponseStatus(event, 500);
+    return { error: "Failed to create user" };
   }
 
-  await db.addIpLookup(ipAddress, id)
+  await db.addIpLookup(ipAddress, id);
 
-  return { passKey, username, error: null }
-})
+  setResponseStatus(event, 201);
+  return { data: { passKey: passKey, username: username }, error: null };
+});
