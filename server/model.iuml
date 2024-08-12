@@ -1,83 +1,103 @@
+```
 @startuml
-!define RECTANGLE class
-!define TABLE class
-!define PK primary_key
-!define FK foreign_key
 
-RECTANGLE Users {
-  +id: TEXT <<PK>>
-  +username: TEXT
-  +passKey: TEXT
+entity "Users" as users {
+  *id : TEXT
+  *username : TEXT
+  *passKey : TEXT
+  +createUser(id, username, passKey) : User
+  +getUserViaId(id) : User
+  +getUserViaPass(passKey) : User
+  +getUserViaName(username) : User
 }
 
-RECTANGLE Stars {
-  +id: INTEGER <<PK>>
-  +imageId: TEXT <<FK imageId>>
-  +starReviewCount: INTEGER
+entity "Images" as images {
+  *id : TEXT
+  *userId : TEXT
+  +addImage(userId, id) : void
+  +deleteImages(userId) : void
+  +getImageIds(userId) : Array<{ id: string }>
+  +getRandomImageIds(fetchedUserIds: Set<string>) : { username: string, imageIds: Array<string>, userId: string } | null
 }
 
-RECTANGLE Images {
-  +id: INTEGER <<PK>>
-  +userId: TEXT <<FK userId>>
-  +imageLocation: TEXT
+entity "Stars" as stars {
+  *id : INTEGER
+  *imageId : INTEGER
+  *starRating : REAL
+  +createStar(imageId, starRating) : void
+  +getStarsById(imageId) : Array<{ starRating: number }>
 }
 
-RECTANGLE Comments {
-  +id: INTEGER <<PK>>
-  +imageId: TEXT <<FK imageId>>
-  +comment: TEXT
+entity "Comments" as comments {
+  *id : INTEGER
+  *imageId : INTEGER
+  *comment : TEXT
+  +addComment(imageId, comment) : void
+  +getCommentsById(imageId) : Array<{ comment: string }>
 }
 
-RECTANGLE API_GenerateAccount {
-  +POST /generate-account
+entity "IpLookup" as ipLookup {
+  *id : INTEGER
+  *ipAddress : TEXT
+  *userId : TEXT
+  +addIpLookup(ipAddress, userId) : void
+  +getIpLookupByIpAddress(ipAddress) : { id: number, ipAddress: string, userId: string } | null
 }
 
-RECTANGLE API_Random {
-  +POST /random
+entity "RatingLookup" as ratingLookup {
+  *ipAddress : TEXT
+  *imageId : INTEGER
+  *commented : BOOLEAN
+  *starRated : BOOLEAN
+  +addRatingLookup(ipAddress, imageId) : void
+  +getRatingLookup(imageId) : { ipAddress: string, imageId: string, commented: boolean, starRated: boolean } | null
+  +upsertRatingLookup(ipAddress, imageId, commented, starRated) : void
 }
 
-RECTANGLE API_ReceiveRating {
-  +POST /receive-rating
+entity "/random" as random {
+  +getRandomImageIds(fetchedUserIds: Set<string>) : { username: string, imageIds: Array<string>, userId: string } | null
 }
 
-RECTANGLE API_Upload {
-  +POST /upload
+entity "/generate-account" as generateAccount {
+  +generateAccount(username: string): Promise<{ data: { passKey: string, username: string } | null, error: string | null }>
 }
 
-RECTANGLE API_GetUser {
-  +GET /user/[pass]
+entity "/receive-rating" as receiveRating {
+  +receiveRating(ipAddress: string, starRating: number, comment: string, imageId: string): Promise<{ message: string | null, error: string | null }>
 }
 
-RECTANGLE Nuxt_Server {
-  +Processes requests
+entity "/upload" as upload {
+  +uploadImage(userId: string, image: File): Promise<{ message: string | null, error: string | null }>
 }
 
-Users --o{ Images : "has"
-Images --o{ Stars : "reviews"
-Images --o{ Comments : "has"
+entity "/user/[pass]" as userPass {
+  +getUserData(passKey: string): Promise<{ user: User, starRatingAverages: number[], imageIds: string[], starRatingTotals: number[], comments: string[][] }>
+}
 
-API_GenerateAccount --> Users : "Creates user"
-API_GenerateAccount --> Users : "Check username availability"
+users ||--o{ images : "creates"
+images ||--o{ stars : "receives"
+images ||--o{ comments : "receives"
+users ||--o{ ipLookup : "has"
+ipLookup ||--o{ ratingLookup : "has"
+ratingLookup }|--|| images : "rates"
 
-API_Random --> Images : "Fetches random image locations"
-API_Random --> Users : "Fetches user info"
+random --> images : "gets"
+random --> users : "gets"
 
-API_ReceiveRating --> Images : "Fetch image id by src"
-API_ReceiveRating --> Comments : "Add comment with image id"
-API_ReceiveRating --> Stars : "Create star rating with image id"
+generateAccount --> users : "creates"
+generateAccount --> ipLookup : "adds"
 
-API_Upload --> Images : "Add image with user id"
-API_Upload --> Nuxt_Server : "Saves image to\nuser-photos/[userId]/\n[userId_time].webp"
+receiveRating --> stars : "rates"
+receiveRating --> comments : "adds"
+receiveRating --> ratingLookup : "updates"
 
-API_GetUser --> Users : "Fetch user via passKey"
-API_GetUser --> Images : "Fetch Images by user id"
-API_GetUser --> Comments : "Fetch Comments by image id"
-API_GetUser --> Stars : "Fetch star ratings by image id"
+upload --> images : "adds"
+upload --> ratingLookup : "creates"
 
-Nuxt_Server --> API_GenerateAccount : "Sends username"
-Nuxt_Server --> API_Random : "Sends fetchedUserIds to be excluded\n from being fetched again"
-Nuxt_Server --> API_ReceiveRating : "Sends starRating,\ncomment, imageSrc"
-Nuxt_Server --> API_Upload : "Sends userId, image file"
-Nuxt_Server --> API_GetUser : "PassKey parsed from URL"
+userPass --|> users : "gets"
+userPass --|> images : "gets"
+userPass --|> comments : "gets"
+userPass --|> stars : "gets"
 
 @enduml
+```
