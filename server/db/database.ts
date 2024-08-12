@@ -15,24 +15,30 @@ interface Images {
 }
 
 export class UserDatabase {
+  private static instance: UserDatabase;
   private db: AsyncDatabase;
 
-  constructor() {
+  private constructor() {
     this.db = new AsyncDatabase(new sqlite3.Database("./server/db/users.db"));
   }
 
-  async initialize(): Promise<void> {
-    try {
-      const sql = await fs.readFile("./server/db/model.sql", "utf-8");
-      const tables = sql.split(";").filter((command) => command.trim());
+  // Method to get the singleton instance
+  public static async getInstance(): Promise<UserDatabase> {
+    if (!UserDatabase.instance) {
+      UserDatabase.instance = new UserDatabase();
+      try {
+        const sql = await fs.readFile("./server/db/model.sql", "utf-8");
+        const tables = sql.split(";").filter((command) => command.trim());
 
-      for (const table of tables) {
-        await this.db.run(table);
+        for (const table of tables) {
+          await UserDatabase.instance.db.run(table);
+        }
+      } catch (error) {
+        console.error("Failed to initialize database:", error);
+        throw error;
       }
-    } catch (error) {
-      console.error("Failed to initialize database:", error);
-      throw error;
     }
+    return UserDatabase.instance;
   }
 
   async createUser(
@@ -100,7 +106,6 @@ export class UserDatabase {
     await this.db.run(query, userId, id);
   }
 
-
   async deleteImages(userId: string): Promise<void> {
     const query = `
       DELETE FROM Images WHERE userId = ?;
@@ -117,6 +122,7 @@ export class UserDatabase {
     `;
     return this.db.all(query, userId);
   }
+
   async getRandomImageIds(fetchedUserIds: Set<string>) {
     const userQuery = `
       SELECT userId FROM Images
@@ -222,7 +228,6 @@ export class UserDatabase {
     `;
     await this.db.run(query, ipAddress, imageId, commented, starRated);
   }
-  
 }
 
 export function generateRandomString(): string {

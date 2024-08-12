@@ -4,9 +4,7 @@ export default defineEventHandler(async (event) => {
   if (event.method !== 'POST') {
     return null
   }
-
-  const db = new UserDatabase()
-  await db.initialize()
+  const db = await UserDatabase.getInstance()
 
   const body = await readBody(event)
 

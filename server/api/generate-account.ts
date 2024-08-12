@@ -1,25 +1,23 @@
 import { UserDatabase, generateRandomString } from '../db/database'
 
 export default defineEventHandler(async (event) => {
-  const db = new UserDatabase()
-  await db.initialize()
-
   if (event.method !== 'POST') {
     return { error: 'Invalid request method' }
   }
 
+  const db = await UserDatabase.getInstance()
   const body = await readBody(event)
   const username = body.username as string
-  const ipAddress = getRequestHeader(event, 'x-forwarded-for')
+  const ipAddress = getRequestHeader(event, 'x-forwarded-for') ?? ""
 
   if (!username) {
     return { error: 'Username is required' }
   }
 
-  const ipLookup = await db.getIpLookupByIpAddress(ipAddress ?? "")
-  if (ipLookup) {
-    return { error: 'An account is already associated with this IP address' }
-  }
+  const ipLookup = await db.getIpLookupByIpAddress(ipAddress)
+  // if (ipLookup) {
+  //   return { error: 'An account is already associated with this IP address' }
+  // }
 
   const existingUser = await db.getUserViaName(username)
   if (existingUser) {
@@ -34,7 +32,7 @@ export default defineEventHandler(async (event) => {
     return { error: 'Failed to create user' }
   }
 
-  await db.addIpLookup(ipAddress ?? "", id)
+  await db.addIpLookup(ipAddress, id)
 
   return { passKey, username, error: null }
 })

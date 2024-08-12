@@ -70,7 +70,6 @@ const props = defineProps<{
     imageIds: string[]
     randomUser: string,
 }>()
-
 const pageRef = ref(1)
 const rating = ref(0)
 const comment = ref('')
