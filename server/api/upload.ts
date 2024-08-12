@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs'
 import path from 'path'
 import sharp from 'sharp'
-import { defineEventHandler, readMultipartFormData } from 'h3'
+import { defineEventHandler, readFormData } from 'h3'
 import { UserDatabase } from '../db/database'
 
 export default defineEventHandler(async (event) => {
@@ -13,40 +13,35 @@ export default defineEventHandler(async (event) => {
   const ipAddress = getRequestHeader(event, "x-forwarded-for") ?? "";
   await db.initialize()
 
-  const form = await readMultipartFormData(event)
+  const formData = await readFormData(event)
+  const formDataEntries = formData.entries()
 
-  if (!form) {
-    return { message: 'No form data received' }
-  }
-
-  const userId = form
-    .find(field => field.name === 'userId')
-    ?.data?.toString()
+  const userId = formData.get('userId')
   if (!userId) {
     return { message: 'Invalid form data' }
   }
 
-  const imageFile = form.find(field => field.name === 'image')
+  const imageFile = formData.get('image') as File
   if (!imageFile) {
     return { message: 'No image file received' }
   }
 
-  const uploadPath = path.join(process.cwd(), 'public', 'user-photos', userId)
+  const uploadPath = path.join(process.cwd(), 'public', 'user-photos', userId.toString())
   await fs.mkdir(uploadPath, { recursive: true })
 
   const timestamp = Date.now()
   const filename = `${userId}_${timestamp}.webp`
   const filePath = path.join(uploadPath, filename)
 
-  const imageLocations = (await db.getImagesById(userId)) ?? ''
+  const imageLocations = (await db.getImagesById(userId.toString())) ?? ''
 
   if (imageLocations.length >= 3) {
     return { message: 'Upload limit reached' }
   }
 
-
   try {
-    const image = sharp(imageFile.data)
+    const buffer = await imageFile.arrayBuffer()  // Convert File to Buffer
+    const image = sharp(Buffer.from(buffer))
     const metadata = await image.metadata()
 
     if (metadata.width && metadata.height) {
@@ -58,7 +53,7 @@ export default defineEventHandler(async (event) => {
         }
       }
       await image.webp({ quality: 50 }).toFile(filePath)
-      await db.addImage(userId, `/user-photos/${userId}/${filename}`)
+      await db.addImage(userId.toString(), `/user-photos/${userId}/${filename}`)
       const imageId = await db.getImageIdBySrc(`/user-photos/${userId}/${filename}`)
 
       await db.addRatingLookup(ipAddress, imageId.id)
@@ -69,8 +64,6 @@ export default defineEventHandler(async (event) => {
       return { message: 'Error retrieving image metadata' }
     }
   }
-
-  
   catch (error) {
     console.error('Error processing image:', error)
     return { message: 'Error processing image' }

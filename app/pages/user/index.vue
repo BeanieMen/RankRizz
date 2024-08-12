@@ -126,7 +126,6 @@ watch(pageRef, (newPage) => {
 const handleFileUpload = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (file && user.value?.id) {
-    // Validate file size and type
     if (file.size > 200 * 1024 * 1024) {
       uploadError.value = 'File size exceeds 200MB'
       return

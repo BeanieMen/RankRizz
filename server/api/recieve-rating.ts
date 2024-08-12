@@ -1,4 +1,4 @@
-import { defineEventHandler, readMultipartFormData } from "h3";
+import { defineEventHandler, readFormData, getRequestHeader } from "h3";
 import { UserDatabase } from "../db/database";
 
 export default defineEventHandler(async (event) => {
@@ -10,27 +10,26 @@ export default defineEventHandler(async (event) => {
   const ipAddress = getRequestHeader(event, "x-forwarded-for") ?? "";
   await db.initialize();
 
-  const form = await readMultipartFormData(event);
-
+  const form = await readFormData(event);
   if (!form) {
     return { message: "No form data received" };
   }
 
-  const starRating = Number(
-    form.find((field) => field.name === "starRating")?.data?.toString()
-  );
-  const comment = form
-    .find((field) => field.name === "comment")
-    ?.data?.toString();
-  const imageSrc = form
-    .find((field) => field.name === "imageSrc")
-    ?.data?.toString();
-  const imageId = await db.getImageIdBySrc(imageSrc!);
+  const starRating = Number(form.get('starRating')?.toString());
+  const comment = form.get('comment')?.toString();
+  const imageSrc = form.get('imageSrc')?.toString();
+
+  if (!imageSrc) {
+    return { message: "Image source is required" };
+  }
+
+  const imageId = await db.getImageIdBySrc(imageSrc);
   const isRated = await db.getRatingLookup(imageId.id);
 
   if (!imageId || (!comment && isNaN(starRating))) {
     return { message: "Invalid form data" };
   }
+
   if (comment) {
     if (!isRated?.commented) {
       await db.addComment(imageId.id, comment);
@@ -44,6 +43,8 @@ export default defineEventHandler(async (event) => {
       return { message: "The user has already commented on this photo" };
     }
   }
+
+  // Handle star rating
   if (!isNaN(starRating)) {
     if (!isRated?.starRated) {
       await db.createStar(imageId.id, starRating);
@@ -54,8 +55,9 @@ export default defineEventHandler(async (event) => {
         true
       );
     } else {
-      return { message: "The user has already rated this photo"};
+      return { message: "The user has already rated this photo" };
     }
   }
+
   return { message: "Successfully uploaded ratings" };
 });
