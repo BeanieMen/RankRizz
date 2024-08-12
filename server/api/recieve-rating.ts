@@ -7,6 +7,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const db = new UserDatabase();
+  const ipAddress = getRequestHeader(event, "x-forwarded-for") ?? "";
   await db.initialize();
 
   const form = await readMultipartFormData(event);
@@ -15,22 +16,46 @@ export default defineEventHandler(async (event) => {
     return { message: "No form data received" };
   }
 
-  const starRating = Number(form.find((field) => field.name === "starRating")?.data?.toString());
-  const comment = form.find((field) => field.name === "comment")?.data?.toString();
-  const imageSrc = form.find((field) => field.name === "imageSrc")?.data?.toString();
-  const imageId = await db.getImageIdBySrc(imageSrc!)
+  const starRating = Number(
+    form.find((field) => field.name === "starRating")?.data?.toString()
+  );
+  const comment = form
+    .find((field) => field.name === "comment")
+    ?.data?.toString();
+  const imageSrc = form
+    .find((field) => field.name === "imageSrc")
+    ?.data?.toString();
+  const imageId = await db.getImageIdBySrc(imageSrc!);
+  const isRated = await db.getRatingLookup(imageId.id);
 
   if (!imageId || (!comment && isNaN(starRating))) {
     return { message: "Invalid form data" };
   }
-
   if (comment) {
-    await db.addComment(imageId.id, comment);
+    if (!isRated?.commented) {
+      await db.addComment(imageId.id, comment);
+      await db.upsertRatingLookup(
+        ipAddress,
+        imageId.id,
+        true,
+        isRated?.starRated!
+      );
+    } else {
+      return { message: "The user has already commented on this photo" };
+    }
   }
-
   if (!isNaN(starRating)) {
-    await db.createStar(imageId.id, starRating);
+    if (!isRated?.starRated) {
+      await db.createStar(imageId.id, starRating);
+      await db.upsertRatingLookup(
+        ipAddress,
+        imageId.id,
+        isRated?.commented!,
+        true
+      );
+    } else {
+      return { message: "The user has already rated this photo"};
+    }
   }
-
   return { message: "Successfully uploaded ratings" };
 });

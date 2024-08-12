@@ -10,9 +10,15 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody(event)
   const username = body.username as string
+  const ipAddress = getRequestHeader(event, 'x-forwarded-for')
 
   if (!username) {
     return { error: 'Username is required' }
+  }
+
+  const ipLookup = await db.getIpLookupByIpAddress(ipAddress ?? "")
+  if (ipLookup) {
+    return { error: 'An account is already associated with this IP address' }
   }
 
   const existingUser = await db.getUserViaName(username)
@@ -27,6 +33,8 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     return { error: 'Failed to create user' }
   }
+
+  await db.addIpLookup(ipAddress ?? "", id)
 
   return { passKey, username, error: null }
 })

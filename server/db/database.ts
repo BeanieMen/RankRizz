@@ -1,7 +1,7 @@
-import fs from 'fs/promises';
-import crypto from 'crypto';
-import { AsyncDatabase } from 'promised-sqlite3';
-import sqlite3 from 'sqlite3';
+import fs from "fs/promises";
+import crypto from "crypto";
+import { AsyncDatabase } from "promised-sqlite3";
+import sqlite3 from "sqlite3";
 
 export interface User {
   id: string;
@@ -19,24 +19,28 @@ export class UserDatabase {
   private db: AsyncDatabase;
 
   constructor() {
-    this.db = new AsyncDatabase(new sqlite3.Database('./server/db/users.db'));
+    this.db = new AsyncDatabase(new sqlite3.Database("./server/db/users.db"));
   }
 
   async initialize(): Promise<void> {
     try {
-      const sql = await fs.readFile('./server/db/model.sql', 'utf-8');
-      const tables = sql.split(';').filter(command => command.trim());
+      const sql = await fs.readFile("./server/db/model.sql", "utf-8");
+      const tables = sql.split(";").filter((command) => command.trim());
 
       for (const table of tables) {
         await this.db.run(table);
       }
     } catch (error) {
-      console.error('Failed to initialize database:', error);
+      console.error("Failed to initialize database:", error);
       throw error;
     }
   }
 
-  async createUser(id: string, username: string, passKey: string): Promise<User | null> {
+  async createUser(
+    id: string,
+    username: string,
+    passKey: string
+  ): Promise<User | null> {
     if (await this.getUserViaId(id)) return null;
 
     const query = `
@@ -79,7 +83,9 @@ export class UserDatabase {
     await this.db.run(query, imageId, starRating);
   }
 
-  async getStarsById(imageId: string): Promise<Array<{ starReviewCount: number }>> {
+  async getStarsById(
+    imageId: string
+  ): Promise<Array<{ starReviewCount: number }>> {
     const query = `
       SELECT starReviewCount FROM Stars
       WHERE imageId = ?;
@@ -95,7 +101,9 @@ export class UserDatabase {
     await this.db.run(query, userId, imageLocation);
   }
 
-  async getImagesById(userId: string): Promise<Array<{ imageLocation: string }>> {
+  async getImagesById(
+    userId: string
+  ): Promise<Array<{ imageLocation: string }>> {
     const query = `
       SELECT imageLocation FROM Images
       WHERE userId = ?;
@@ -103,7 +111,7 @@ export class UserDatabase {
     return this.db.all(query, userId);
   }
 
-  async getImageIdBySrc(imageSrc: string): Promise<{ id: string }> {
+  async getImageIdBySrc(imageSrc: string, p0?: void): Promise<{ id: string }> {
     const query = `
       SELECT id FROM Images
       WHERE imageLocation = ?;
@@ -121,22 +129,30 @@ export class UserDatabase {
   async getRandomImageLocation(fetchedUserIds: Set<string>) {
     const userQuery = `
       SELECT userId FROM Images
-      WHERE userId NOT IN (${Array.from(fetchedUserIds).map(() => '?').join(',')})
+      WHERE userId NOT IN (${Array.from(fetchedUserIds)
+        .map(() => "?")
+        .join(",")})
       ORDER BY RANDOM()
       LIMIT 1;
     `;
-  
-    const userRow: Images = await this.db.get(userQuery, ...Array.from(fetchedUserIds));
+
+    const userRow: Images = await this.db.get(
+      userQuery,
+      ...Array.from(fetchedUserIds)
+    );
     if (!userRow?.userId) return null;
 
     const imagesQuery = `
       SELECT imageLocation FROM Images
       WHERE userId = ?;
     `;
-    const imageRows: {imageLocation: string}[] = await this.db.all(imagesQuery, userRow.userId);
-    const imageLocations = imageRows.map(row => row.imageLocation);
+    const imageRows: { imageLocation: string }[] = await this.db.all(
+      imagesQuery,
+      userRow.userId
+    );
+    const imageLocations = imageRows.map((row) => row.imageLocation);
     const user = await this.getUserViaId(userRow.userId);
-    
+
     return {
       username: user?.username,
       imageLocations,
@@ -159,8 +175,65 @@ export class UserDatabase {
     `;
     return this.db.all(query, imageId);
   }
+
+  async addIpLookup(ipAddress: string, userId: string): Promise<void> {
+    const query = `
+      INSERT INTO IpLookup (ipAddress, userId)
+      VALUES (?, ?);
+    `;
+    await this.db.run(query, ipAddress, userId);
+  }
+
+  async getIpLookupByIpAddress(
+    ipAddress: string
+  ): Promise<{ id: number; ipAddress: string; userId: string } | null> {
+    const query = `
+      SELECT * FROM IpLookup
+      WHERE ipAddress = ?;
+    `;
+    return (await this.db.get(query, ipAddress)) || null;
+  }
+
+  async addRatingLookup(
+    ipAddress: string,
+    imageId: string,
+  ): Promise<void> {
+    const query = `
+      INSERT INTO RatingLookup (ipAddress, imageId, commented, starRated)
+      VALUES (?, ?, ?, ?)
+    `;
+    await this.db.run(query, ipAddress, imageId, false, false);
+  }
+
+  async getRatingLookup(
+    imageId: string
+  ): Promise<{
+    ipAddress: string;
+    imageId: string;
+    commented: boolean;
+    starRated: boolean;
+  } | null> {
+    const query = `
+      SELECT * FROM RatingLookup
+      WHERE imageId = ?;
+    `;
+    return (await this.db.get(query, imageId)) || null;
+  }
+
+  async upsertRatingLookup(ipAddress: string, imageId: string, commented: boolean, starRated: boolean): Promise<void> {
+    const query = `
+      INSERT INTO RatingLookup (ipAddress, imageId, commented, starRated)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(ipAddress, imageId)
+      DO UPDATE SET
+        commented = excluded.commented,
+        starRated = excluded.starRated;
+    `;
+    await this.db.run(query, ipAddress, imageId, commented, starRated);
+  }
+  
 }
 
 export function generateRandomString(): string {
-  return crypto.randomBytes(10).toString('hex');
+  return crypto.randomBytes(10).toString("hex");
 }

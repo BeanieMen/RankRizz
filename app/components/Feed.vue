@@ -100,10 +100,10 @@ async function submitFeedback() {
         body: formData,
     })
 
-    if (response?.message === "Successfully uploaded ratings") {
+    if (response.message === "Successfully uploaded ratings") {
         setStatusMessage("Successfully rated!", "text-green-500")
     } else {
-        setStatusMessage("Error rating user.", "text-red-500")
+        setStatusMessage(response.message, "text-red-500")
     }
 }
 

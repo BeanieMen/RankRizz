@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const db = new UserDatabase()
+  const ipAddress = getRequestHeader(event, "x-forwarded-for") ?? "";
   await db.initialize()
 
   const form = await readMultipartFormData(event)
@@ -58,7 +59,10 @@ export default defineEventHandler(async (event) => {
       }
       await image.webp({ quality: 50 }).toFile(filePath)
       await db.addImage(userId, `/user-photos/${userId}/${filename}`)
+      const imageId = await db.getImageIdBySrc(`/user-photos/${userId}/${filename}`)
 
+      await db.addRatingLookup(ipAddress, imageId.id)
+      
       return { message: 'File uploaded successfully' }
     }
     else {
