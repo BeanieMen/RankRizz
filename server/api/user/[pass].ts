@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   const imageIds = (await db.getImageIds(user.id)).map(
     (obj) => obj.id
   );
-  const starReviewCounts: number[] = [];
+  const starRatingTotals: number[] = [];
 
   const comments = await Promise.all(
     imageIds.map(async (imageId) => {
@@ -30,18 +30,18 @@ export default defineEventHandler(async (event) => {
   const ratings = await Promise.all(
     imageIds.map(async (imageId) => {
       const stars = await db.getStarsById(imageId);
-      starReviewCounts.push(stars.length);
+      starRatingTotals.push(stars.length);
       return stars.length > 0
-        ? stars.reduce((a, b) => a + b.starReviewCount, 0) / stars.length
+        ? stars.reduce((a, b) => a + b.starRating, 0) / stars.length
         : 0;
     })
   );
 
   return {
     user,
-    rating: ratings,
+    starRatingAverages: ratings,
     imageIds,
-    starReviewCount: starReviewCounts,
+    starRatingTotals: starRatingTotals,
     comments,
   };
 });

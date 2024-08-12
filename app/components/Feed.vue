@@ -25,9 +25,20 @@
                 </div>
 
                 <div class="flex flex-col items-center mb-6">
-                    <NuxtRating :read-only="false" :rating-size="24" :rating-value="rating" border-color="#db8403"
-                        active-color="#ffa41c" inactive-color="#111827" :rating-step="1" :rounded-corners="true"
-                        :border-width="5" @rating-selected="updateRating" class="bg-background" />
+                    <NuxtRating 
+                        :read-only="false"
+                        :rating-size="24"                        
+                        :rating-value="rating"         
+                        border-color="#db8403"
+                        active-color="#ffa41c" 
+                        inactive-color="#111827" 
+                        :rating-step="0.5" 
+                        :rating-level="10"
+                        :rating-count="10"
+                        :rounded-corners="true"
+                        :border-width="5"
+                        @rating-selected="updateRating"
+                        class="bg-background" />
                 </div>
 
                 <div class="w-full mb-6">
@@ -56,6 +67,7 @@ import { ref } from 'vue'
 
 const props = defineProps<{
     imagePaths: string[],
+    imageIds: string[]
     randomUser: string,
 }>()
 
@@ -84,7 +96,7 @@ function handleIndicatorClick(page: number, onClick: (page: number) => void) {
 
 async function submitFeedback() {
     const formData = new FormData()
-    formData.append('imageSrc', props.imagePaths[pageRef.value - 1]!)
+    formData.append('imageId', props.imageIds[pageRef.value - 1]!)
 
     if (rating.value > 0) {
         formData.append('starRating', String(rating.value))

@@ -53,13 +53,13 @@
             <!-- Star Rating Section -->
             <div class="flex flex-col items-center mt-4">
               <h2 class="text-lg font-semibold mb-2">
-                RizzRates ({{ starReviewCount }} reviews)
+                RizzRates ({{ starRatingTotal }} reviews)
               </h2>
               <NuxtRating :read-only="true" :rating-size="24" :rating-value="rating" border-color="#db8403"
                 active-color="#ffa41c" inactive-color="#fff" :rating-step="0.5" :rounded-corners="true"
-                :border-width="5" />
+                :rating-level="10" :rating-count="10" :border-width="5" />
               <h3 class="text-md mb-2">
-                {{ rating.toFixed(2) }} out of 5 stars
+                {{ rating.toFixed(2) }} out of 10 stars
               </h3>
             </div>
 
@@ -104,23 +104,23 @@ const imageIds = ref<string[]>([])
 const comments = ref<string[]>([])
 const uploadError = ref<string | null>(null)
 const uploadSuccess = ref(false)
-const images: string[] = [] 
-let starReviewCount = 0
+const images: string[] = []
+let starRatingTotal = 0
 
 const userData = await $fetch(`/api/user/${passKey}`)
 if (userData) {
   user.value = userData.user
-  rating.value = userData.rating[pageRef.value - 1] ?? 0
+  rating.value = userData.starRatingAverages[pageRef.value - 1] ?? 0
   imageIds.value = userData.imageIds ?? []
-  starReviewCount = userData.starReviewCount[pageRef.value - 1] ?? 0
+  starRatingTotal = userData.starRatingTotals[pageRef.value - 1] ?? 0
   comments.value = userData.comments[pageRef.value - 1] ?? []
-  imageIds.value.forEach(v => {images.push(`/user-photos/${user.value?.id}/id_${v}.webp`)})
+  imageIds.value.forEach(v => { images.push(`/user-photos/${user.value?.id}/id_${v}.webp`) })
 }
 
 watch(pageRef, (newPage) => {
   if (userData) {
-    rating.value = userData.rating[newPage - 1] ?? 0
-    starReviewCount = userData.starReviewCount[newPage - 1] ?? 0
+    rating.value = userData.starRatingAverages[newPage - 1] ?? 0
+    starRatingTotal = userData.starRatingTotals[newPage - 1] ?? 0
     comments.value = userData.comments[newPage - 1] ?? []
   }
 })

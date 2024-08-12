@@ -8,6 +8,7 @@
         v-for="user in users" 
         :key="user.userId" 
         :image-paths="user.imagePath"
+        :image-ids="user.imageIds"
         :random-user="user.username" 
       />
     </div>

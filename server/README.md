@@ -8,8 +8,8 @@ Fetches user information based on the provided pass.
 **Response:**
 - `user` (User) : User details.
 - `imageIds` (string[]) : List of images uploaded by the user in the form of their ids.
-- `rating` (number[]) : Average rating given to each photo of the user
-- `starReviewCount` (number[]) : Total number of stars given to each photo of the user.
+- `starRatingAverages` (number[]) : Average rating given to each photo of the user
+- `starRatingTotals` (number[]) : Total number of stars given to each photo of the user.
 - `comments` (string[][]) : The comments given to each photo of the user.
 
 **Example Request and Response:**
@@ -25,8 +25,8 @@ GET /user/somepass
     "exampleId1",
     "exampleId2"
   ],
-  "rating": [2,3]
-  "starReviewCount": [20, 2],
+  "starRatingAverages": [2,3]
+  "starRatingTotals": [20, 2],
   "comments": [
   ["unmatched rizz"],
   ["absolute L"]

@@ -76,7 +76,7 @@ export class UserDatabase {
 
   async createStar(imageId: string, starRating: number): Promise<void> {
     const query = `
-      INSERT INTO Stars (imageId, starReviewCount)
+      INSERT INTO Stars (imageId, starRating)
       VALUES (?, ?);
     `;
     await this.db.run(query, imageId, starRating);
@@ -84,9 +84,9 @@ export class UserDatabase {
 
   async getStarsById(
     imageId: string
-  ): Promise<Array<{ starReviewCount: number }>> {
+  ): Promise<Array<{ starRating: number }>> {
     const query = `
-      SELECT starReviewCount FROM Stars
+      SELECT starRating FROM Stars
       WHERE imageId = ?;
     `;
     return this.db.all(query, imageId);

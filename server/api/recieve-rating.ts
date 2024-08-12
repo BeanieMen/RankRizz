@@ -17,14 +17,13 @@ export default defineEventHandler(async (event) => {
 
   const starRating = Number(form.get('starRating')?.toString());
   const comment = form.get('comment')?.toString();
-  const imageSrc = form.get('imageSrc')?.toString();
+  const imageId = form.get('imageId')?.toString();
 
-  if (!imageSrc) {
+  if (!imageId) {
     return { message: "Image source is required" };
   }
 
-  const imageId = await db.getImageIdBySrc(imageSrc);
-  const isRated = await db.getRatingLookup(imageId.id);
+  const isRated = await db.getRatingLookup(imageId);
 
   if (!imageId || (!comment && isNaN(starRating))) {
     return { message: "Invalid form data" };
@@ -32,10 +31,10 @@ export default defineEventHandler(async (event) => {
 
   if (comment) {
     if (!isRated?.commented) {
-      await db.addComment(imageId.id, comment);
+      await db.addComment(imageId, comment);
       await db.upsertRatingLookup(
         ipAddress,
-        imageId.id,
+        imageId,
         true,
         isRated?.starRated!
       );
@@ -47,10 +46,10 @@ export default defineEventHandler(async (event) => {
   // Handle star rating
   if (!isNaN(starRating)) {
     if (!isRated?.starRated) {
-      await db.createStar(imageId.id, starRating);
+      await db.createStar(imageId, starRating);
       await db.upsertRatingLookup(
         ipAddress,
-        imageId.id,
+        imageId,
         isRated?.commented!,
         true
       );
