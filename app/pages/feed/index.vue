@@ -29,25 +29,31 @@ const fetchedUserIds = ref<Set<string>>(new Set())
 
 async function fetchRandomUsers() {
   try {
+    const queryParam = Array.from(fetchedUserIds.value).join(',');
     const response = await $fetch('/api/random', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ fetchedUserIds: Array.from(fetchedUserIds.value) }),
+      method: 'GET',
+      query: { fetchedUserIds: queryParam }
     })
 
-    if (response && response.userId) {
-      noUsersAvailable.value = false
-      fetchedUserIds.value.add(response.userId)
-      users.value.push({
-        imageIds: response.imageIds ?? [],
-        username: response.username ?? '',
-        userId: response.userId ?? '',
-        imagePath: response.imageIds?.map(id => `/user-photos/${response.userId}/id_${id}.webp`) ?? [],
-      })
+    if (response?.data.randomUsers) {
+      if (response.data.randomUsers.length === 0) {
+        allUsersFetched.value = true
+      } else {
+        noUsersAvailable.value = false
+        response.data.randomUsers.forEach(user => {
+          if (user.userId && !fetchedUserIds.value.has(user.userId)) {
+            fetchedUserIds.value.add(user.userId)
+            users.value.push({
+              imageIds: user.imageIds ?? [],
+              username: user.username ?? '',
+              userId: user.userId,
+              imagePath: user.imageIds?.map(id => `/user-photos/${user.userId}/id_${id}.webp`) ?? [],
+            })
+          }
+        })
+      }
     } else {
-      allUsersFetched.value = true
+      noUsersAvailable.value = true
     }
   } catch (error) {
     console.error('Error fetching random users:', error)
@@ -64,6 +70,4 @@ const handleScroll = useThrottleFn(async (event: Event) => {
 }, 300)
 
 await fetchRandomUsers()
-await fetchRandomUsers()
-
 </script>

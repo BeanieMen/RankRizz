@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   try {
     const imageIds = (await db.getImageIds(user.id)).map((obj) => obj.id);
     const comments = await getCommentsForImages(db, imageIds);
-    const { ratings, starRatingTotals } = await getStarRatingsForImages(
+    const { starRatingAverages, starRatingTotals } = await getStarRatingsForImages(
       db,
       imageIds
     );
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
       error: null,
       data: {
         user,
-        starRatingAverages: ratings,
+        starRatingAverages: starRatingAverages,
         imageIds,
         starRatingTotals,
         comments,
@@ -52,21 +52,16 @@ async function getCommentsForImages(
 async function getStarRatingsForImages(
   db: UserDatabase,
   imageIds: string[]
-): Promise<{ ratings: number[]; starRatingTotals: number[] }> {
-  const ratings: number[] = [];
+): Promise<{ starRatingAverages: number[]; starRatingTotals: number[] }> {
   const starRatingTotals: number[] = [];
+  const starRatingAverages: number[] = [];
 
   await Promise.all(
     imageIds.map(async (imageId) => {
-      const stars = await db.getStarsById(imageId);
-      starRatingTotals.push(stars.length);
-      ratings.push(
-        stars.length > 0
-          ? stars.reduce((a, b) => a + b.starRating, 0) / stars.length
-          : 0
-      );
+      starRatingTotals.push(await db.getTotalStarsCount(imageId));
+      starRatingAverages.push(await db.getAverageStarRating(imageId));
     })
   );
 
-  return { ratings, starRatingTotals };
+  return { starRatingAverages, starRatingTotals };
 }

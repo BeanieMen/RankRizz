@@ -88,9 +88,7 @@ export class UserDatabase {
     await this.db.run(query, imageId, starRating);
   }
 
-  async getStarsById(
-    imageId: string
-  ): Promise<Array<{ starRating: number }>> {
+  async getStarsById(imageId: string): Promise<Array<{ starRating: number }>> {
     const query = `
       SELECT starRating FROM Stars
       WHERE imageId = ?;
@@ -98,6 +96,24 @@ export class UserDatabase {
     return this.db.all(query, imageId);
   }
 
+  async getTotalStarsCount(imageId: string): Promise<number> {
+    const query = `
+      SELECT COUNT(*) as count FROM Stars
+      WHERE imageId = ?;
+    `;
+    const result: { count: number } | undefined = await this.db.get(query, imageId);
+    return result?.count || 0;
+  }
+
+  async getAverageStarRating(imageId: string): Promise<number> {
+    const query = `
+      SELECT AVG(starRating) as average FROM Stars
+      WHERE imageId = ?;
+    `;
+    const result: { average: number | null } | undefined = await this.db.get(query, imageId);
+    return result?.average || 0;
+  }
+  
   async addImage(userId: string, id: string): Promise<void> {
     const query = `
       INSERT INTO Images (userId, id)
@@ -113,9 +129,7 @@ export class UserDatabase {
     await this.db.run(query, userId);
   }
 
-  async getImageIds(
-    userId: string
-  ): Promise<Array<{ id: string }>> {
+  async getImageIds(userId: string): Promise<Array<{ id: string }>> {
     const query = `
       SELECT id FROM Images
       WHERE userId = ?;
@@ -130,32 +144,39 @@ export class UserDatabase {
         .map(() => "?")
         .join(",")})
       ORDER BY RANDOM()
-      LIMIT 1;
+      LIMIT 5;
     `;
-
-    const userRow: Images = await this.db.get(
+  
+    const userRows: { userId: string }[] = await this.db.all(
       userQuery,
       ...Array.from(fetchedUserIds)
     );
-    if (!userRow?.userId) return null;
-
-    const imagesQuery = `
-      SELECT id FROM Images
-      WHERE userId = ?;
-    `;
-    const imageRows: { id: string }[] = await this.db.all(
-      imagesQuery,
-      userRow.userId
-    );
-    const imageIds = imageRows.map((row) => row.id);
-    const user = await this.getUserViaId(userRow.userId);
-
-    return {
-      username: user?.username,
-      imageIds,
-      userId: userRow.userId,
-    };
+    if (userRows.length === 0) return null;
+  
+    const result = [];
+  
+    for (const userRow of userRows) {
+      const imagesQuery = `
+        SELECT id FROM Images
+        WHERE userId = ?;
+      `;
+      const imageRows: { id: string }[] = await this.db.all(
+        imagesQuery,
+        userRow.userId
+      );
+      const imageIds = imageRows.map((row) => row.id);
+      const user = await this.getUserViaId(userRow.userId);
+  
+      result.push({
+        username: user?.username,
+        imageIds,
+        userId: userRow.userId,
+      });
+    }
+  
+    return result;
   }
+  
 
   async addComment(imageId: string, comment: string): Promise<void> {
     const query = `
@@ -191,10 +212,7 @@ export class UserDatabase {
     return (await this.db.get(query, ipAddress)) || null;
   }
 
-  async addRatingLookup(
-    ipAddress: string,
-    imageId: string,
-  ): Promise<void> {
+  async addRatingLookup(ipAddress: string, imageId: string): Promise<void> {
     const query = `
       INSERT INTO RatingLookup (ipAddress, imageId, commented, starRated)
       VALUES (?, ?, ?, ?)
@@ -202,9 +220,7 @@ export class UserDatabase {
     await this.db.run(query, ipAddress, imageId, false, false);
   }
 
-  async getRatingLookup(
-    imageId: string
-  ): Promise<{
+  async getRatingLookup(imageId: string): Promise<{
     ipAddress: string;
     imageId: string;
     commented: boolean;
@@ -217,7 +233,12 @@ export class UserDatabase {
     return (await this.db.get(query, imageId)) || null;
   }
 
-  async upsertRatingLookup(ipAddress: string, imageId: string, commented: boolean, starRated: boolean): Promise<void> {
+  async upsertRatingLookup(
+    ipAddress: string,
+    imageId: string,
+    commented: boolean,
+    starRated: boolean
+  ): Promise<void> {
     const query = `
       INSERT INTO RatingLookup (ipAddress, imageId, commented, starRated)
       VALUES (?, ?, ?, ?)
