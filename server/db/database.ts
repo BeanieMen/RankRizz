@@ -9,20 +9,15 @@ export interface User {
   passKey: string;
 }
 
-interface Images {
-  id: number;
-  userId: string;
-}
-
 export class UserDatabase {
   private static instance: UserDatabase;
   private db: AsyncDatabase;
 
   private constructor() {
-    this.db = new AsyncDatabase(new sqlite3.Database("./server/db/users.db"));
+    const dbFile = process.env.NODE_ENV === 'test' ? "./server/tests/user-test.db" : "./server/db/users.db";
+    this.db = new AsyncDatabase(new sqlite3.Database(dbFile));
   }
 
-  // Method to get the singleton instance
   public static async getInstance(): Promise<UserDatabase> {
     if (!UserDatabase.instance) {
       UserDatabase.instance = new UserDatabase();
@@ -61,7 +56,8 @@ export class UserDatabase {
       SELECT id, username, passKey FROM Users
       WHERE id = ?;
     `;
-    return (await this.db.get(query, id)) || null;
+    const user: User = await this.db.get(query, id)
+    return user;
   }
 
   async getUserViaPass(passKey: string): Promise<User | null> {
@@ -86,14 +82,6 @@ export class UserDatabase {
       VALUES (?, ?);
     `;
     await this.db.run(query, imageId, starRating);
-  }
-
-  async getStarsById(imageId: string): Promise<Array<{ starRating: number }>> {
-    const query = `
-      SELECT starRating FROM Stars
-      WHERE imageId = ?;
-    `;
-    return this.db.all(query, imageId);
   }
 
   async getTotalStarsCount(imageId: string): Promise<number> {
@@ -248,6 +236,19 @@ export class UserDatabase {
         starRated = excluded.starRated;
     `;
     await this.db.run(query, ipAddress, imageId, commented, starRated);
+  }
+  async resetDatabase(): Promise<void> {
+    const queries = [
+      `DELETE FROM Comments;`,
+      `DELETE FROM Stars;`,
+      `DELETE FROM Images;`,
+      `DELETE FROM Users;`,
+      `DELETE FROM IpLookup;`,
+      `DELETE FROM RatingLookup;`,
+    ];
+    for (const query of queries) {
+      await this.db.run(query);
+    }
   }
 }
 

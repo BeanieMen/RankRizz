@@ -16,6 +16,7 @@ public/workbox-sw*.js*
 
 .data
 server/db/users.db
+server/tests/user-test.db
 .wrangler
 public/user-photos
 .env
