@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-md mx-auto mt-8 p-6 bg-white  rounded-lg">
+  <div class="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg">
     <form @submit.prevent="submitForm">
       <div class="mb-4">
         <label for="username" class="block text-gray-700 font-bold mb-2">Username:</label>
@@ -28,45 +28,50 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
-import { useCookie, useRouter } from 'nuxt/app'
+import { ref } from 'vue';
+import { useCookie } from 'nuxt/app';
 
-const username = ref('')
-const errorMessage = ref('')
-const successMessage = ref('')
-const successLink = ref('')
-const passKeyCookie = useCookie('passKey')
-const router = useRouter()
+interface ApiResponse {
+  error?: string;
+  data?: {
+    passKey: string;
+    username: string;
+  };
+}
 
-const submitForm = async () => {
-  errorMessage.value = ''
-  successMessage.value = ''
-  successLink.value = ''
+const username = ref<string>('');
+const errorMessage = ref<string>('');
+const successMessage = ref<string>('');
+const successLink = ref<string>('');
+const passKeyCookie = useCookie<string>('passKey');
+
+const submitForm = async (): Promise<void> => {
+  errorMessage.value = '';
+  successMessage.value = '';
+  successLink.value = '';
 
   try {
-    const response = await $fetch('/api/generate-account', {
+    const response = await $fetch<ApiResponse>('/api/generate-account', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ username: username.value }),
-    })
-
-
+    });
 
     if (response.error) {
-      errorMessage.value = response.error!
+      errorMessage.value = response.error;
+    } else if (response.data) {
+      passKeyCookie.value = response.data.passKey;
+      successMessage.value = 'Account generated successfully. Keep the link given safe as it is used to login to your account';
+      successLink.value = `/passkey-login?pass=${passKeyCookie.value}`;
     }
-    else if ('data' in response) {
-      passKeyCookie.value = response.data.passKey
-      successMessage.value = 'Account generated successfully. Keep the link given safe as it is used to login to your account'
-      successLink.value = `/passkey-login?pass=${passKeyCookie.value}`
-
+  } catch (error: any) {
+    if (error.response && error.response._data) {
+      errorMessage.value = error.response._data.error || 'An unknown error occurred';
+    } else {
+      errorMessage.value = 'Failed to connect to the server. Please try again later.';
     }
   }
-  catch (error) {
-    console.error('There was a problem with the fetch operation:', error)
-    errorMessage.value = 'There was a problem with the fetch operation'
-  }
-}
+};
 </script>

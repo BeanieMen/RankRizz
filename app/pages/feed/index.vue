@@ -4,13 +4,8 @@
   </div>
   <div v-else @scroll="handleScroll" class="h-screen overflow-auto flex flex-col">
     <div class="flex-1">
-      <Feed 
-        v-for="user in users" 
-        :key="user.userId" 
-        :image-paths="user.imagePath"
-        :image-ids="user.imageIds"
-        :random-user="user.username" 
-      />
+      <Feed v-for="user in users" :key="user.userId" :image-paths="user.imagePath" :image-ids="user.imageIds"
+        :random-user="user.username" />
     </div>
     <div v-if="allUsersFetched" class="text-center text-xl font-bold mb-10 mt-4 text-white">
       All users have been fetched.
@@ -28,36 +23,33 @@ const noUsersAvailable = ref(false)
 const fetchedUserIds = ref<Set<string>>(new Set())
 
 async function fetchRandomUsers() {
-  try {
-    const queryParam = Array.from(fetchedUserIds.value).join(',');
-    const response = await $fetch('/api/random', {
-      method: 'GET',
-      query: { fetchedUserIds: queryParam }
-    })
+  const queryParam = Array.from(fetchedUserIds.value).join(',');
+  const response = await $fetch('/api/random', {
+    method: 'GET',
+    query: { fetchedUserIds: queryParam }
+  })
 
-    if (response?.data.randomUsers) {
-      if (response.data.randomUsers.length === 0) {
-        allUsersFetched.value = true
-      } else {
-        noUsersAvailable.value = false
-        response.data.randomUsers.forEach(user => {
-          if (user.userId && !fetchedUserIds.value.has(user.userId)) {
-            fetchedUserIds.value.add(user.userId)
-            users.value.push({
-              imageIds: user.imageIds ?? [],
-              username: user.username ?? '',
-              userId: user.userId,
-              imagePath: user.imageIds?.map(id => `/user-photos/${user.userId}/id_${id}.webp`) ?? [],
-            })
-          }
-        })
-      }
+  if (response?.data.randomUsers) {
+    if (response.data.randomUsers.length === 0) {
+      allUsersFetched.value = true
     } else {
-      noUsersAvailable.value = true
+      noUsersAvailable.value = false
+      response.data.randomUsers.forEach(user => {
+        if (user.userId && !fetchedUserIds.value.has(user.userId)) {
+          fetchedUserIds.value.add(user.userId)
+          users.value.push({
+            imageIds: user.imageIds ?? [],
+            username: user.username ?? '',
+            userId: user.userId,
+            imagePath: user.imageIds?.map(id => `/user-photos/${user.userId}/id_${id}.webp`) ?? [],
+          })
+        }
+      })
     }
-  } catch (error) {
-    console.error('Error fetching random users:', error)
+  } else {
+    noUsersAvailable.value = true
   }
+
 }
 
 const handleScroll = useThrottleFn(async (event: Event) => {

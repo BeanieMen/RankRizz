@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     return { error: "User ID and image file are required" };
   }
 
-  const uploadPath = path.join(process.cwd(), "public", "user-photos", userId);
+  const uploadPath = path.join(process.cwd(), "user-photos", userId);
   const uploadedImageId = generateRandomString();
   const filename = `id_${uploadedImageId}.webp`;
   const filePath = path.join(uploadPath, filename);

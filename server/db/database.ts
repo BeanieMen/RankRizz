@@ -14,7 +14,11 @@ export class UserDatabase {
   private db: AsyncDatabase;
 
   private constructor() {
-    const dbFile = process.env.NODE_ENV === 'test' ? "./server/tests/user-test.db" : "./server/db/users.db";
+    const dbFile = process.env.NODE_ENV === 'production'
+    ? "users.db"
+    : process.env.NODE_ENV === 'test'
+    ? "./server/tests/user-test.db"
+    : "./server/db/users.db";
     this.db = new AsyncDatabase(new sqlite3.Database(dbFile));
   }
 
@@ -24,7 +28,6 @@ export class UserDatabase {
       try {
         const sql = await fs.readFile("./server/db/model.sql", "utf-8");
         const tables = sql.split(";").filter((command) => command.trim());
-
         for (const table of tables) {
           await UserDatabase.instance.db.run(table);
         }

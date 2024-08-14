@@ -2,52 +2,62 @@
   <div class="flex flex-col items-center bg-background h-screen py-10 px-5">
     <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl text-black flex flex-col items-center my-auto">
       <div class="flex flex-col md:grid md:grid-cols-2 md:gap-x-10 w-full">
+        <!-- Profile Section -->
         <div class="flex flex-col mb-6 md:mb-0">
-
           <div class="text-center mb-6">
             <h1 class="text-2xl md:text-3xl font-semibold mb-2">
               User Profile
             </h1>
-            <p>
-              Manage your profile information and upload photos.
-            </p>
+            <p>Manage your profile information and upload photos.</p>
           </div>
 
           <div class="space-y-6">
-
-            <UCarousel :items="images" :ui="{
-              item: 'basis-full',
-              container: 'rounded-lg',
-              indicators: {
-                wrapper: 'relative bottom-0 mt-4'
-              }
-            }" indicators class="w-full md:w-64 mx-auto">
+            <UCarousel
+              ref="carousel"
+              :items="images"
+              :ui="{
+                item: 'basis-full',
+                container: 'rounded-lg',
+                indicators: {
+                  wrapper: 'relative bottom-0 mt-4',
+                },
+              }"
+              indicators
+              class="w-full md:w-64 mx-auto"
+            >
               <template #default="{ item }">
-                <img :src="item" class="w-full" draggable="false">
+                <img :src="item" class="w-full" draggable="false" />
               </template>
 
               <template #indicator="{ onClick, page, active }">
-
-                <UButton :label="String(page)" :variant="active ? 'solid' : 'outline'" size="2xs"
-                  class="rounded-full min-w-6 justify-center" @click="pageRef = page; onClick(page);" />
+                <UButton
+                  :label="String(page)"
+                  :variant="active ? 'solid' : 'outline'"
+                  size="2xs"
+                  class="rounded-full min-w-6 justify-center"
+                  @click="pageRef = page; onClick(page)"
+                />
               </template>
             </UCarousel>
 
+            <!-- File Upload Section -->
             <div v-if="imageIds.length < 3" class="text-center mt-6">
               <label for="file-upload" class="block text-lg font-medium mb-2">
                 Upload Photos:
               </label>
-              <input id="file-upload" type="file" class="block w-full border border-gray-300 rounded-lg p-2"
-                accept=".jpeg, .jpg, .png, .webp" @change="handleFileUpload">
+              <input
+                id="file-upload"
+                type="file"
+                class="block w-full border border-gray-300 rounded-lg p-2"
+                accept=".jpeg, .jpg, .png, .webp"
+                @change="handleFileUpload"
+              />
             </div>
 
+            <!-- User Information -->
             <div class="bg-gray-100 p-4 rounded-lg shadow-inner">
-              <p>
-                <strong>ID:</strong> {{ user?.id }}
-              </p>
-              <p>
-                <strong>Username:</strong> {{ user?.username }}
-              </p>
+              <p><strong>ID:</strong> {{ user?.id }}</p>
+              <p><strong>Username:</strong> {{ user?.username }}</p>
             </div>
 
             <!-- Star Rating Section -->
@@ -55,14 +65,25 @@
               <h2 class="text-lg font-semibold mb-2">
                 RizzRates ({{ starRatingTotal }} reviews)
               </h2>
-              <NuxtRating :read-only="true" :rating-size="24" :rating-value="rating" border-color="#db8403"
-                active-color="#ffa41c" inactive-color="#fff" :rating-step="0.5" :rounded-corners="true"
-                :rating-level="10" :rating-count="10" :border-width="5" />
+              <NuxtRating
+                :read-only="true"
+                :rating-size="24"
+                :rating-value="starRatingAverage"
+                border-color="#db8403"
+                active-color="#ffa41c"
+                inactive-color="#fff"
+                :rating-step="0.5"
+                :rounded-corners="true"
+                :rating-level="10"
+                :rating-count="10"
+                :border-width="5"
+              />
               <h3 class="text-md mb-2">
-                {{ rating.toFixed(2) }} out of 10 stars
+                {{ starRatingAverage.toFixed(2) }} out of 10 stars
               </h3>
             </div>
 
+            <!-- Upload Status -->
             <div class="mt-4">
               <div v-if="uploadError" class="text-center text-red-500">
                 Error: {{ uploadError }}
@@ -76,9 +97,7 @@
 
         <!-- Comment Section -->
         <div class="bg-gray-100 p-4 rounded-lg shadow-inner w-full my-auto h-[90vh] max-h-[40rem] overflow-y-auto">
-          <h2 class="text-xl text-center font-bold mb-4">
-            RizzViews
-          </h2>
+          <h2 class="text-xl text-center font-bold mb-4">RizzViews</h2>
           <div class="space-y-4">
             <div v-for="(comment, index) in comments" :key="index" class="p-4 bg-white rounded-lg shadow">
               <p>{{ comment }}</p>
@@ -90,16 +109,15 @@
   </div>
 </template>
 
-
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useCookie } from '#app'
+import { ref, onMounted, watch } from 'vue'
+import { useCookie } from 'nuxt/app';
 import type { User } from '~~/server/db/database'
 
 const passKey = useCookie('passKey').value
 const pageRef = ref(1)
 const user = ref<User | null>(null)
-const rating = ref<number>(1)
+const starRatingAverage = ref<number>(1)
 const imageIds = ref<string[]>([])
 const comments = ref<string[]>([])
 const uploadError = ref<string | null>(null)
@@ -110,16 +128,22 @@ let starRatingTotal = 0
 const response = await $fetch(`/api/user/${passKey}`)
 if ('data' in response) {
   user.value = response.data.user
-  rating.value = response.data.starRatingAverages[pageRef.value - 1] ?? 0
+  starRatingAverage.value = response.data.starRatingAverages[pageRef.value - 1] ?? 0
   imageIds.value = response.data.imageIds ?? []
   starRatingTotal = response.data.starRatingTotals[pageRef.value - 1] ?? 0
   comments.value = response.data.comments[pageRef.value - 1] ?? []
   imageIds.value.forEach(v => { images.push(`/user-photos/${user.value?.id}/id_${v}.webp`) })
 }
 
+const carousel = ref()
+
+onMounted(() => {
+  carousel.value?.select(1)
+})
+
 watch(pageRef, (newPage) => {
   if ('data' in response) {
-    rating.value = response.data.starRatingAverages[newPage - 1] ?? 0
+    starRatingAverage.value = response.data.starRatingAverages[newPage - 1] ?? 0
     starRatingTotal = response.data.starRatingTotals[newPage - 1] ?? 0
     comments.value = response.data.comments[newPage - 1] ?? []
   }
@@ -156,15 +180,14 @@ const handleFileUpload = async (event: Event) => {
           window.location.reload()
         }, 500)
       }
-      else {
-        uploadError.value = response.error ?? "Unknown Error"
-      }
     }
-    catch (error) {
-      uploadError.value = 'Failed to upload images'
-      console.error('Error uploading images:', error)
+    catch (error: any) {
+      if (error.response && error.response._data) {
+        uploadError.value = error.response._data.error || 'An unknown error occurred';
+      } else {
+        uploadError.value = 'Failed to connect to the server. Please try again later.';
+      }
     }
   }
 }
-
 </script>

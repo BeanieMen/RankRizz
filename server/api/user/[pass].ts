@@ -13,18 +13,19 @@ export default defineEventHandler(async (event) => {
 
   try {
     const imageIds = (await db.getImageIds(user.id)).map((obj) => obj.id);
-    const comments = await getCommentsForImages(db, imageIds);
-    const { starRatingAverages, starRatingTotals } = await getStarRatingsForImages(
-      db,
-      imageIds
-    );
+    
+    const [comments, starRatingAverages, starRatingTotals] = await Promise.all([
+      getCommentsForImages(db, imageIds),
+      getStarRatingsForImages(db, imageIds).then(ratings => ratings.starRatingAverages),
+      getStarRatingsForImages(db, imageIds).then(ratings => ratings.starRatingTotals)
+    ]);
 
     setResponseStatus(event, 200);
     return {
       error: null,
       data: {
         user,
-        starRatingAverages: starRatingAverages,
+        starRatingAverages,
         imageIds,
         starRatingTotals,
         comments,
@@ -41,25 +42,27 @@ async function getCommentsForImages(
   db: UserDatabase,
   imageIds: string[]
 ): Promise<string[][]> {
-  return Promise.all(
+  const commentsData = await Promise.all(
     imageIds.map(async (imageId) => {
-      const commentsData = await db.getCommentsById(imageId);
-      return commentsData.map((obj) => obj.comment);
+      const comments = await db.getCommentsById(imageId);
+      return comments.map((obj) => obj.comment);
     })
   );
+
+  return commentsData;
 }
 
 async function getStarRatingsForImages(
   db: UserDatabase,
   imageIds: string[]
 ): Promise<{ starRatingAverages: number[]; starRatingTotals: number[] }> {
-  const starRatingTotals: number[] = [];
-  const starRatingAverages: number[] = [];
+  const starRatingTotals = new Array(imageIds.length);
+  const starRatingAverages = new Array(imageIds.length);
 
   await Promise.all(
-    imageIds.map(async (imageId) => {
-      starRatingTotals.push(await db.getTotalStarsCount(imageId));
-      starRatingAverages.push(await db.getAverageStarRating(imageId));
+    imageIds.map(async (imageId, index) => {
+      starRatingTotals[index] = await db.getTotalStarsCount(imageId);
+      starRatingAverages[index] = await db.getAverageStarRating(imageId);
     })
   );
 

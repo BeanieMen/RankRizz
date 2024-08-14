@@ -56,15 +56,18 @@
 import { ref } from 'vue'
 
 const props = defineProps<{
-    imagePaths: string[],
     imageIds: string[]
     randomUser: string,
+    imagePaths: string[],
 }>()
+
+
 const pageRef = ref(1)
 const rating = ref(0)
 const comment = ref('')
 const statusMessage = ref<string | null>(null)
 const statusMessageClass = ref('')
+const images = ref<string[]>([])
 
 const carouselUI = {
     item: 'basis-full',
@@ -116,4 +119,5 @@ function setStatusMessage(message: string, messageClass: string) {
     statusMessage.value = message
     statusMessageClass.value = messageClass
 }
+
 </script>
