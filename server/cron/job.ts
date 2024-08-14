@@ -1,14 +1,12 @@
-import { env } from 'process'
 import path from 'path'
 import fs from 'fs'
 import { UserDatabase } from '../db/database'
 import { defineCronHandler } from '#nuxt/cron'
 
 export default defineCronHandler(
-  () => env.DELETION_TIME as string,
+  () => process.env.DELETION_TIME as string,
   async () => {
-    const db = new UserDatabase()
-    await db.initialize()
+    const db = await UserDatabase.getInstance()
 
     const directoryPath = path.resolve(process.cwd(), 'public/user-photos')
 

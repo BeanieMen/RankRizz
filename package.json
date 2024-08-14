@@ -13,7 +13,6 @@
     "@nuxt/eslint-config": "^0.3.13",
     "@nuxt/test-utils": "^3.14.0",
     "@nuxt/ui": "^2.18.4",
-    "@nuxthub/core": "^0.6.17",
     "@types/node": "^20.14.3",
     "autoprefixer": "^10.4.19",
     "eslint": "^9.5.0",
@@ -23,8 +22,7 @@
     "tailwindcss": "^3.4.7",
     "tsx": "^4.16.3",
     "typescript": "^5.4.5",
-    "vitest": "^2.0.5",
-    "vue3-carousel-nuxt": "^1.1.2"
+    "vitest": "^2.0.5"
   },
   "type": "module",
   "dependencies": {
@@ -32,8 +30,6 @@
     "nuxt-rating": "^0.1.5",
     "promised-sqlite3": "^2.1.0",
     "sharp": "^0.33.4",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7",
-    "vue3-carousel": "^0.3.3"
+    "sqlite3": "^5.1.7"
   }
 }

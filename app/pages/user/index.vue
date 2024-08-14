@@ -93,7 +93,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useCookie } from '#app'
+import { useCookie } from 'nuxt/app';
 import type { User } from '~~/server/db/database'
 
 const passKey = useCookie('passKey').value
