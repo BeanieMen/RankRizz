@@ -2,7 +2,8 @@ import path from 'path'
 import fs from 'fs'
 import { UserDatabase } from '../db/database'
 import { defineCronHandler } from '#nuxt/cron'
-
+import { config } from 'dotenv'
+config()
 export default defineCronHandler(
   () => process.env.DELETION_TIME as string,
   async () => {

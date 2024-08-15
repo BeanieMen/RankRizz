@@ -162,7 +162,6 @@ const handleFileUpload = async (event: Event) => {
     }
     catch (error) {
       uploadError.value = 'Failed to upload images'
-      console.error('Error uploading images:', error)
     }
   }
 }

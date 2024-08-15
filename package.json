@@ -26,6 +26,7 @@
   },
   "type": "module",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "nuxt-cron": "^1.6.0",
     "nuxt-rating": "^0.1.5",
     "promised-sqlite3": "^2.1.0",
