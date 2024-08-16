@@ -156,13 +156,13 @@ const handleFileUpload = async (event: Event) => {
           window.location.reload()
         }, 500)
       }
-      else {
-        uploadError.value = response.error ?? "Unknown Error"
-      }
     }
-    catch (error) {
-      uploadError.value = 'Failed to upload images'
-    }
+    catch (error: any) {
+      if (error.response && error.response._data) {
+      uploadError.value = error.response._data.error || 'An unknown error occurred';
+    } else {
+      uploadError.value = 'Failed to connect to the server. Please try again later.';
+    }    }
   }
 }
 

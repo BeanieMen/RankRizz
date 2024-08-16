@@ -41,6 +41,8 @@ export default defineEventHandler(async (event) => {
     return { error: "Upload limit reached (3 images per user)" };
   }
 
+
+
   try {
     const buffer = Buffer.from(await imageFile.arrayBuffer());
     const image = sharp(buffer);
@@ -54,6 +56,7 @@ export default defineEventHandler(async (event) => {
           error: "Image dimensions must be between 256x256 and 1920x1080.",
         };
       }
+
       await image.webp({ quality: 50 }).toFile(filePath);
 
       await db.addImage(userId, uploadedImageId);
