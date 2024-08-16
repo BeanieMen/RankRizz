@@ -25,7 +25,7 @@ pnpm install
 ```
 
 ```bash
-pnpm dev
+pnpm build; pnpm start
 ```
 
 **Features**
