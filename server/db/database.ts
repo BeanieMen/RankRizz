@@ -15,7 +15,7 @@ export class UserDatabase {
 
   private constructor() {
     const dbFile = process.env.NODE_ENV === 'production'
-    ? "users.db"
+    ? "./.output/users.db"
     : process.env.NODE_ENV === 'test'
     ? "./server/tests/user-test.db"
     : "./server/db/users.db";
