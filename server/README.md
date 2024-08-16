@@ -68,7 +68,7 @@ Content-Type: application/json
 ### `GET /random`
 Fetches 5 random users and their associated image locations, excluding users specified in the query parameter.
 
-**Query Parameters:*
+**Query Parameters:**
 - `fetchedUserIds` (string[]): Comma-separated list of user IDs to be excluded from the random selection.
 
 **Response:**
