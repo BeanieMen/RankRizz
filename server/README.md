@@ -127,7 +127,7 @@ The body will be in the form of formdata.
 Submits a rating and/or comment for an image.
 
 **Request Body:**
-- `starRating` (number, optional): The rating for the image (1-5).
+- `starRating` (number, optional): The rating for the image (0.5-10).
 - `comment` (string, optional): The comment for the image.
 - `imageId` (string): The ID of the image being rated.
 
