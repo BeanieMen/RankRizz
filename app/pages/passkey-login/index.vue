@@ -15,7 +15,7 @@ const router = useRouter()
 const passKey = route.query.pass as string | undefined
 
 if (passKey) {
-    const response = await $fetch('/api/passKey/set', {
+    const response = await $fetch('/api/pass-key/set', {
         params: { passKey }
     })
     setTimeout(() => {

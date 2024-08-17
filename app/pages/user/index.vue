@@ -112,7 +112,7 @@ let response: UserApiResponse
 
 const fetchPassKey = async (): Promise<string | null> => {
   try {
-    const response = await $fetch(`/api/passKey/get`, {
+    const response = await $fetch(`/api/pass-key/get`, {
       credentials: 'include'
     }) as { passKey: string }
     return response.passKey

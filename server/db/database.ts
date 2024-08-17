@@ -14,11 +14,19 @@ export class UserDatabase {
   private db: AsyncDatabase;
 
   private constructor() {
-    const dbFile = process.env.NODE_ENV === 'production'
-    ? "users.db"
-    : process.env.NODE_ENV === 'test'
-    ? "./server/tests/user-test.db"
-    : "./server/db/users.db";
+    let dbFile;
+
+    switch (process.env.NODE_ENV) {
+      case "production":
+        dbFile = "users.db";
+        break;
+      case "test":
+        dbFile = "./server/tests/user-test.db";
+        break;
+      default:
+        dbFile = "./server/db/users.db";
+        break;
+    }
     this.db = new AsyncDatabase(new sqlite3.Database(dbFile));
   }
 
@@ -59,7 +67,7 @@ export class UserDatabase {
       SELECT id, username, passKey FROM Users
       WHERE id = ?;
     `;
-    const user: User = await this.db.get(query, id)
+    const user: User = await this.db.get(query, id);
     return user;
   }
 
@@ -92,7 +100,10 @@ export class UserDatabase {
       SELECT COUNT(*) as count FROM Stars
       WHERE imageId = ?;
     `;
-    const result: { count: number } | undefined = await this.db.get(query, imageId);
+    const result: { count: number } | undefined = await this.db.get(
+      query,
+      imageId
+    );
     return result?.count || 0;
   }
 
@@ -101,10 +112,13 @@ export class UserDatabase {
       SELECT AVG(starRating) as average FROM Stars
       WHERE imageId = ?;
     `;
-    const result: { average: number | null } | undefined = await this.db.get(query, imageId);
+    const result: { average: number | null } | undefined = await this.db.get(
+      query,
+      imageId
+    );
     return result?.average || 0;
   }
-  
+
   async addImage(userId: string, id: string): Promise<void> {
     const query = `
       INSERT INTO Images (userId, id)
@@ -137,15 +151,15 @@ export class UserDatabase {
       ORDER BY RANDOM()
       LIMIT 5;
     `;
-  
+
     const userRows: { userId: string }[] = await this.db.all(
       userQuery,
       ...Array.from(fetchedUserIds)
     );
     if (userRows.length === 0) return null;
-  
+
     const result = [];
-  
+
     for (const userRow of userRows) {
       const imagesQuery = `
         SELECT id FROM Images
@@ -157,17 +171,16 @@ export class UserDatabase {
       );
       const imageIds = imageRows.map((row) => row.id);
       const user = await this.getUserViaId(userRow.userId);
-  
+
       result.push({
         username: user?.username,
         imageIds,
         userId: userRow.userId,
       });
     }
-  
+
     return result;
   }
-  
 
   async addComment(imageId: string, comment: string): Promise<void> {
     const query = `
