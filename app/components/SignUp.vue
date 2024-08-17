@@ -29,7 +29,6 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import { useCookie } from 'nuxt/app';
 
 interface ApiResponse {
   error?: string;
@@ -43,7 +42,6 @@ const username = ref<string>('');
 const errorMessage = ref<string>('');
 const successMessage = ref<string>('');
 const successLink = ref<string>('');
-const passKeyCookie = useCookie<string>('passKey');
 
 const submitForm = async (): Promise<void> => {
   errorMessage.value = '';
@@ -62,9 +60,8 @@ const submitForm = async (): Promise<void> => {
     if (response.error) {
       errorMessage.value = response.error;
     } else if (response.data) {
-      passKeyCookie.value = response.data.passKey;
       successMessage.value = 'Account generated successfully. Keep the link given safe as it is used to login to your account';
-      successLink.value = `/passkey-login?pass=${passKeyCookie.value}`;
+      successLink.value = `/passkey-login?pass=${response.data.passKey}`;
     }
   } catch (error: any) {
     if (error.response && error.response._data) {

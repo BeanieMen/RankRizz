@@ -8,7 +8,6 @@
 
 <script lang="ts" setup>
 import { useRoute, useRouter } from 'nuxt/app'
-import { useCookie } from 'nuxt/app'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,11 +15,12 @@ const router = useRouter()
 const passKey = route.query.pass as string | undefined
 
 if (passKey) {
-    const passKeyCookie = useCookie('passKey')
-    passKeyCookie.value = passKey
-
+    const response = await $fetch('/api/passKey/set', {
+        params: { passKey }
+    })
     setTimeout(() => {
         router.push('/user')
     }, 1000)
 }
+
 </script>

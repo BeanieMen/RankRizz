@@ -12,31 +12,20 @@
           </div>
 
           <div class="space-y-6">
-            <UCarousel
-              ref="carousel"
-              :items="images"
-              :ui="{
-                item: 'basis-full',
-                container: 'rounded-lg',
-                indicators: {
-                  wrapper: 'relative bottom-0 mt-4',
-                },
-              }"
-              indicators
-              class="w-full md:w-64 mx-auto"
-            >
+            <UCarousel ref="carousel" :items="images" :ui="{
+              item: 'basis-full',
+              container: 'rounded-lg',
+              indicators: {
+                wrapper: 'relative bottom-0 mt-4',
+              },
+            }" indicators class="w-full md:w-64 mx-auto">
               <template #default="{ item }">
                 <img :src="item" class="w-full" draggable="false" />
               </template>
 
               <template #indicator="{ onClick, page, active }">
-                <UButton
-                  :label="String(page)"
-                  :variant="active ? 'solid' : 'outline'"
-                  size="2xs"
-                  class="rounded-full min-w-6 justify-center"
-                  @click="pageRef = page; onClick(page)"
-                />
+                <UButton :label="String(page)" :variant="active ? 'solid' : 'outline'" size="2xs"
+                  class="rounded-full min-w-6 justify-center" @click="pageRef = page; onClick(page)" />
               </template>
             </UCarousel>
 
@@ -45,13 +34,8 @@
               <label for="file-upload" class="block text-lg font-medium mb-2">
                 Upload Photos:
               </label>
-              <input
-                id="file-upload"
-                type="file"
-                class="block w-full border border-gray-300 rounded-lg p-2"
-                accept=".jpeg, .jpg, .png, .webp"
-                @change="handleFileUpload"
-              />
+              <input id="file-upload" type="file" class="block w-full border border-gray-300 rounded-lg p-2"
+                accept=".jpeg, .jpg, .png, .webp" @change="handleFileUpload" />
             </div>
 
             <!-- User Information -->
@@ -65,19 +49,9 @@
               <h2 class="text-lg font-semibold mb-2">
                 RizzRates ({{ starRatingTotal }} reviews)
               </h2>
-              <NuxtRating
-                :read-only="true"
-                :rating-size="24"
-                :rating-value="starRatingAverage"
-                border-color="#db8403"
-                active-color="#ffa41c"
-                inactive-color="#fff"
-                :rating-step="0.5"
-                :rounded-corners="true"
-                :rating-level="10"
-                :rating-count="10"
-                :border-width="5"
-              />
+              <NuxtRating :read-only="true" :rating-size="24" :rating-value="starRatingAverage" border-color="#db8403"
+                active-color="#ffa41c" inactive-color="#fff" :rating-step="0.5" :rounded-corners="true"
+                :rating-level="10" :rating-count="10" :border-width="5" />
               <h3 class="text-md mb-2">
                 {{ starRatingAverage.toFixed(2) }} out of 10 stars
               </h3>
@@ -108,41 +82,65 @@
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { useCookie } from 'nuxt/app';
 import type { User } from '~~/server/db/database'
 
-const passKey = useCookie('passKey').value
+// Define the type for API responses
+type UserApiResponse =
+  | { error: string; data?: undefined }
+  | {
+    error: null; data: {
+      user: User;
+      starRatingAverages: number[];
+      imageIds: string[];
+      starRatingTotals: number[];
+      comments: string[][];
+    }
+  };
+
 const pageRef = ref(1)
 const user = ref<User | null>(null)
-const starRatingAverage = ref<number>(1)
+const starRatingAverage = ref<number>(0)
 const imageIds = ref<string[]>([])
 const comments = ref<string[]>([])
 const uploadError = ref<string | null>(null)
 const uploadSuccess = ref(false)
 const images: string[] = []
 let starRatingTotal = 0
+let response: UserApiResponse
 
-const response = await $fetch(`/api/user/${passKey}`)
-if ('data' in response) {
-  user.value = response.data.user
-  starRatingAverage.value = response.data.starRatingAverages[pageRef.value - 1] ?? 0
-  imageIds.value = response.data.imageIds ?? []
-  starRatingTotal = response.data.starRatingTotals[pageRef.value - 1] ?? 0
-  comments.value = response.data.comments[pageRef.value - 1] ?? []
-  imageIds.value.forEach(v => { images.push(`/user-photos/${user.value?.id}/id_${v}.webp`) })
+const fetchPassKey = async (): Promise<string | null> => {
+  try {
+    const response = await $fetch(`/api/passKey/get`, {
+      credentials: 'include'
+    }) as { passKey: string }
+    return response.passKey
+  } catch (error: any) {
+    console.error('Failed to fetch passKey:', error)
+    return null
+  }
 }
 
 const carousel = ref()
 
-onMounted(() => {
+onMounted(async () => {
+  const passKey = await fetchPassKey()
+  response = await $fetch(`/api/user/${passKey}`) as UserApiResponse
+
+  if (response.error === null && response.data) {
+    user.value = response.data.user
+    starRatingAverage.value = response.data.starRatingAverages[pageRef.value - 1] ?? 0
+    imageIds.value = response.data.imageIds ?? []
+    starRatingTotal = response.data.starRatingTotals[pageRef.value - 1] ?? 0
+    comments.value = response.data.comments[pageRef.value - 1] ?? []
+    imageIds.value.forEach(v => { images.push(`/user-photos/${user.value?.id}/id_${v}.webp`) })
+  }
   carousel.value?.select(1)
 })
 
 watch(pageRef, (newPage) => {
-  if ('data' in response) {
+  if (response.error === null && response.data) {
     starRatingAverage.value = response.data.starRatingAverages[newPage - 1] ?? 0
     starRatingTotal = response.data.starRatingTotals[newPage - 1] ?? 0
     comments.value = response.data.comments[newPage - 1] ?? []
