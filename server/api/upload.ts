@@ -26,7 +26,6 @@ export default defineEventHandler(async (event) => {
   const uploadedImageId = generateRandomString();
   const filename = `id_${uploadedImageId}.webp`;
   const filePath = path.join(uploadPath, filename);
-
   try {
     await fs.mkdir(uploadPath, { recursive: true });
   } catch (error) {

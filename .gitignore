@@ -20,3 +20,4 @@ server/tests/user-test.db
 .wrangler
 user-photos
 .env
+users.db

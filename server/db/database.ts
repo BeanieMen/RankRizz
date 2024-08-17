@@ -21,7 +21,7 @@ export class UserDatabase {
         dbFile = "users.db";
         break;
       case "test":
-        dbFile = "./server/tests/user-test.db";
+        dbFile = "users.db";
         break;
       default:
         dbFile = "./server/db/users.db";

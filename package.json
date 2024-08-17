@@ -6,7 +6,7 @@
     "build": "nuxi build; cp .env .output; mkdir .output/server/db; cp server/db/model.sql .output/server/db/model.sql",
     "start": "NODE_ENV='production'; cd .output; node ./server/index.mjs",
     "lint": "eslint .",
-    "test": "vitest"
+    "test": "vitest --no-file-parallelism"
   },
   "devDependencies": {
     "@nuxt/devtools": "^1.3.3",

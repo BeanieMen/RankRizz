@@ -99,7 +99,7 @@ async function submitFeedback() {
 
     resetForm()
 
-    const response = await $fetch("/api/recieve-rating", {
+    const response = await $fetch("/api/receive-rating", {
         method: 'POST',
         body: formData,
     })
