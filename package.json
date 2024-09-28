@@ -28,6 +28,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@vueuse/core": "^11.1.0",
     "dotenv": "^16.4.5",
     "nuxt-cron": "^1.6.0",
     "nuxt-rating": "^0.1.5",
