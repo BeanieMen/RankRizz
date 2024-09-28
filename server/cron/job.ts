@@ -3,7 +3,9 @@ import fs from 'fs'
 import { UserDatabase } from '../db/database'
 import { defineCronHandler } from '#nuxt/cron'
 import { config } from 'dotenv'
+
 config()
+
 export default defineCronHandler(
   () => process.env.DELETION_TIME as string,
   async () => {
@@ -15,6 +17,7 @@ export default defineCronHandler(
       const items = fs.readdirSync(directoryPath, { withFileTypes: true })
       const folders = items.filter(item => item.isDirectory())
 
+      // FIXME: there is a unhandled promise rejection here. Fix it
       folders.forEach(async (folder) => {
         // folder.name = userId / id
         await db.deleteImages(folder.name)
