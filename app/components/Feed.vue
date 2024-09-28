@@ -1,8 +1,6 @@
 <template>
     <div class="max-w-7xl mx-auto p-6 bg-background text-text h-[40rem] flex items-center justify-center">
-        <div
-            class="w-full max-w-5xl p-6 rounded-lg flex flex-col md:grid md:grid-cols-2 md:gap-x-36 place-items-center">
-
+        <div class="w-full max-w-5xl p-6 rounded-lg flex flex-col md:grid md:grid-cols-2 md:gap-x-36 place-items-center">
             <div class="w-full md:w-auto flex justify-center mb-6 md:mb-0">
                 <UCarousel :items="imagePaths" :ui="carouselUI" indicators class="w-full md:w-[30rem] mx-auto">
                     <template #default="{ item }">
