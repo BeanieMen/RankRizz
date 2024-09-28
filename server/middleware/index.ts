@@ -1,7 +1,7 @@
 import { defineEventHandler } from 'h3';
-import { createReadStream } from 'fs';
-import { stat } from 'fs/promises';
-import path from 'path';
+import { createReadStream } from 'node:fs';
+import { stat } from 'node:fs/promises';
+import path from 'node:path';
 
 export default defineEventHandler(async (event) => {
   const url = event.node.req.url;
