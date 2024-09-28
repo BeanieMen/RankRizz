@@ -10,11 +10,13 @@ export default defineEventHandler((event) => {
         path: '/',
       })
       return { message: 'Cookie set successfully' }
-    } catch (error) {
+    }
+    catch (error) {
       setResponseStatus(event, 500)
       return { error: 'Failed to set the cookie' }
     }
-  } else {
+  }
+  else {
     setResponseStatus(event, 400)
     return { error: 'passKey is missing or invalid' }
   }

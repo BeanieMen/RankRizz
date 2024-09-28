@@ -1,7 +1,9 @@
 <template>
   <div class="text-[#313756] flex flex-col justify-center items-center mx-5 h-screen">
     <div class="w-full max-w-lg p-6 shadow-md rounded-lg bg-white">
-      <h1 class="text-2xl font-bold mb-6 text-center">Welcome to RankRizz</h1>
+      <h1 class="text-2xl font-bold mb-6 text-center">
+        Welcome to RankRizz
+      </h1>
 
       <p class="text-center mb-6">
         Ever wondered what’s the real tea on your pics? <br>

@@ -5,7 +5,7 @@ export default defineNuxtConfig({
     'nuxt-rating',
     'nuxt-cron',
     '@nuxt/eslint',
-    "@nuxt/ui"
+    '@nuxt/ui',
   ],
   css: ['~~/assets/css/tailwind.css'],
   postcss: {

@@ -1,10 +1,14 @@
 import path from 'path'
 import fs from 'fs'
+import { config } from 'dotenv'
 import { UserDatabase } from '../db/database'
 import { defineCronHandler } from '#nuxt/cron'
-import { config } from 'dotenv'
 
 config()
+
+const { DELETION_TIME } = process.env
+
+if (!DELETION_TIME) throw new Error('No DELETION_TIME set in process.env')
 
 export default defineCronHandler(
   () => process.env.DELETION_TIME as string,

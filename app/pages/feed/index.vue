@@ -1,13 +1,30 @@
 <template>
-  <div v-if="noUsersAvailable" class="flex justify-center items-center h-screen">
-    <p class="text-center text-5xl text-white">There are currently no photos to be rated.</p>
+  <div
+    v-if="noUsersAvailable"
+    class="flex justify-center items-center h-screen"
+  >
+    <p class="text-center text-5xl text-white">
+      There are currently no photos to be rated.
+    </p>
   </div>
-  <div v-else @scroll="handleScroll" class="h-screen overflow-auto flex flex-col">
+  <div
+    v-else
+    class="h-screen overflow-auto flex flex-col"
+    @scroll="handleScroll"
+  >
     <div class="flex-1">
-      <Feed v-for="user in users" :key="user.userId" :image-paths="user.imagePath" :image-ids="user.imageIds"
-        :random-user="user.username" />
+      <FeedView
+        v-for="user in users"
+        :key="user.userId"
+        :image-paths="user.imagePath"
+        :image-ids="user.imageIds"
+        :random-user="user.username"
+      />
     </div>
-    <div v-if="allUsersFetched" class="text-center text-xl font-bold mb-10 mt-4 text-white">
+    <div
+      v-if="allUsersFetched"
+      class="text-center text-xl font-bold mb-10 mt-4 text-white"
+    >
       All users have been fetched.
     </div>
   </div>
@@ -23,18 +40,19 @@ const noUsersAvailable = ref(false)
 const fetchedUserIds = ref<Set<string>>(new Set())
 
 async function fetchRandomUsers() {
-  const queryParam = Array.from(fetchedUserIds.value).join(',');
+  const queryParam = Array.from(fetchedUserIds.value).join(',')
   const response = await $fetch('/api/random', {
     method: 'GET',
-    query: { fetchedUserIds: queryParam }
+    query: { fetchedUserIds: queryParam },
   })
 
   if (response?.data.randomUsers) {
     if (response.data.randomUsers.length === 0) {
       allUsersFetched.value = true
-    } else {
+    }
+    else {
       noUsersAvailable.value = false
-      response.data.randomUsers.forEach(user => {
+      response.data.randomUsers.forEach((user) => {
         if (user.userId && !fetchedUserIds.value.has(user.userId)) {
           fetchedUserIds.value.add(user.userId)
           users.value.push({
@@ -46,10 +64,10 @@ async function fetchRandomUsers() {
         }
       })
     }
-  } else {
+  }
+  else {
     noUsersAvailable.value = true
   }
-
 }
 
 const handleScroll = useThrottleFn(async (event: Event) => {

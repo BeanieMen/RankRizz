@@ -12,30 +12,56 @@
           </div>
 
           <div class="space-y-6">
-            <UCarousel ref="carousel" :items="images" :ui="{
-              item: 'basis-full',
-              container: 'rounded-lg',
-              indicators: {
-                wrapper: 'relative bottom-0 mt-4',
-              },
-            }" indicators class="w-full md:w-64 mx-auto">
+            <UCarousel
+              ref="carousel"
+              :items="images"
+              :ui="{
+                item: 'basis-full',
+                container: 'rounded-lg',
+                indicators: {
+                  wrapper: 'relative bottom-0 mt-4',
+                },
+              }"
+              indicators
+              class="w-full md:w-64 mx-auto"
+            >
               <template #default="{ item }">
-                <img :src="item" class="w-full" draggable="false" />
+                <img
+                  :src="item"
+                  class="w-full"
+                  draggable="false"
+                >
               </template>
 
               <template #indicator="{ onClick, page, active }">
-                <UButton :label="String(page)" :variant="active ? 'solid' : 'outline'" size="2xs"
-                  class="rounded-full min-w-6 justify-center" @click="pageRef = page; onClick(page)" />
+                <UButton
+                  :label="String(page)"
+                  :variant="active ? 'solid' : 'outline'"
+                  size="2xs"
+                  class="rounded-full min-w-6 justify-center"
+                  @click="pageRef = page; onClick(page)"
+                />
               </template>
             </UCarousel>
 
             <!-- File Upload Section -->
-            <div v-if="imageIds.length < 3" class="text-center mt-6">
-              <label for="file-upload" class="block text-lg font-medium mb-2">
+            <div
+              v-if="imageIds.length < 3"
+              class="text-center mt-6"
+            >
+              <label
+                for="file-upload"
+                class="block text-lg font-medium mb-2"
+              >
                 Upload Photos:
               </label>
-              <input id="file-upload" type="file" class="block w-full border border-gray-300 rounded-lg p-2"
-                accept=".jpeg, .jpg, .png, .webp" @change="handleFileUpload" />
+              <input
+                id="file-upload"
+                type="file"
+                class="block w-full border border-gray-300 rounded-lg p-2"
+                accept=".jpeg, .jpg, .png, .webp"
+                @change="handleFileUpload"
+              >
             </div>
 
             <!-- User Information -->
@@ -49,9 +75,19 @@
               <h2 class="text-lg font-semibold mb-2">
                 RizzRates ({{ starRatingTotal }} reviews)
               </h2>
-              <NuxtRating :read-only="true" :rating-size="24" :rating-value="starRatingAverage" border-color="#db8403"
-                active-color="#ffa41c" inactive-color="#fff" :rating-step="0.5" :rounded-corners="true"
-                :rating-level="10" :rating-count="10" :border-width="5" />
+              <NuxtRating
+                :read-only="true"
+                :rating-size="24"
+                :rating-value="starRatingAverage"
+                border-color="#db8403"
+                active-color="#ffa41c"
+                inactive-color="#fff"
+                :rating-step="0.5"
+                :rounded-corners="true"
+                :rating-level="10"
+                :rating-count="10"
+                :border-width="5"
+              />
               <h3 class="text-md mb-2">
                 {{ starRatingAverage.toFixed(2) }} out of 10 stars
               </h3>
@@ -59,10 +95,16 @@
 
             <!-- Upload Status -->
             <div class="mt-4">
-              <div v-if="uploadError" class="text-center text-red-500">
+              <div
+                v-if="uploadError"
+                class="text-center text-red-500"
+              >
                 Error: {{ uploadError }}
               </div>
-              <div v-else-if="uploadSuccess" class="text-center text-green-500">
+              <div
+                v-else-if="uploadSuccess"
+                class="text-center text-green-500"
+              >
                 Images uploaded successfully!
               </div>
             </div>
@@ -71,9 +113,15 @@
 
         <!-- Comment Section -->
         <div class="bg-gray-100 p-4 rounded-lg shadow-inner w-full my-auto h-[90vh] max-h-[40rem] overflow-y-auto">
-          <h2 class="text-xl text-center font-bold mb-4">RizzViews</h2>
+          <h2 class="text-xl text-center font-bold mb-4">
+            RizzViews
+          </h2>
           <div class="space-y-4">
-            <div v-for="(comment, index) in comments" :key="index" class="p-4 bg-white rounded-lg shadow">
+            <div
+              v-for="(comment, index) in comments"
+              :key="index"
+              class="p-4 bg-white rounded-lg shadow"
+            >
               <p>{{ comment }}</p>
             </div>
           </div>
@@ -82,22 +130,24 @@
     </div>
   </div>
 </template>
+
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import type { User } from '~~/server/db/database'
 
 // Define the type for API responses
 type UserApiResponse =
-  | { error: string; data?: undefined }
+  | { error: string, data?: undefined }
   | {
-    error: null; data: {
-      user: User;
-      starRatingAverages: number[];
-      imageIds: string[];
-      starRatingTotals: number[];
-      comments: string[][];
+    error: null
+    data: {
+      user: User
+      starRatingAverages: number[]
+      imageIds: string[]
+      starRatingTotals: number[]
+      comments: string[][]
     }
-  };
+  }
 
 const pageRef = ref(1)
 const user = ref<User | null>(null)
@@ -113,10 +163,11 @@ let response: UserApiResponse
 const fetchPassKey = async (): Promise<string | null> => {
   try {
     const response = await $fetch(`/api/pass-key/get`, {
-      credentials: 'include'
+      credentials: 'include',
     }) as { passKey: string }
     return response.passKey
-  } catch (error: any) {
+  }
+  catch (error: any) {
     console.error('Failed to fetch passKey:', error)
     return null
   }
@@ -134,7 +185,9 @@ onMounted(async () => {
     imageIds.value = response.data.imageIds ?? []
     starRatingTotal = response.data.starRatingTotals[pageRef.value - 1] ?? 0
     comments.value = response.data.comments[pageRef.value - 1] ?? []
-    imageIds.value.forEach(v => { images.push(`/user-photos/${user.value?.id}/id_${v}.webp`) })
+    imageIds.value.forEach((v) => {
+      images.push(`/user-photos/${user.value?.id}/id_${v}.webp`)
+    })
   }
   carousel.value?.select(1)
 })
@@ -167,7 +220,7 @@ const handleFileUpload = async (event: Event) => {
     formData.append('userId', user.value?.id)
 
     try {
-      const response = await $fetch("/api/upload", {
+      const response = await $fetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
@@ -181,9 +234,10 @@ const handleFileUpload = async (event: Event) => {
     }
     catch (error: any) {
       if (error.response && error.response._data) {
-        uploadError.value = error.response._data.error || 'An unknown error occurred';
-      } else {
-        uploadError.value = 'Failed to connect to the server. Please try again later.';
+        uploadError.value = error.response._data.error || 'An unknown error occurred'
+      }
+      else {
+        uploadError.value = 'Failed to connect to the server. Please try again later.'
       }
     }
   }
