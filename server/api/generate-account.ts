@@ -6,7 +6,6 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const username = body.username as string
   const ipAddress = getRequestHeader(event, 'x-forwarded-for') ?? ''
-  console.log(getRequestHeader(event, 'x-forwarded-for'))
   if (!username) {
     setResponseStatus(event, 400)
     return { error: 'Username is required' }
