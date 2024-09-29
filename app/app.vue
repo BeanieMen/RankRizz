@@ -2,6 +2,6 @@
 </script>
 
 <template>
-  <NavBar />
+  <Navbar />
   <NuxtPage class="pt-20" />
 </template>

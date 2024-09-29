@@ -10,9 +10,9 @@
             </h1>
             <p>Manage your profile information and upload photos.</p>
           </div>
-
           <div class="space-y-6">
             <UCarousel
+              v-if="images.length > 0"
               ref="carousel"
               :items="images"
               :ui="{
@@ -132,7 +132,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import type { User } from '~~/server/db/database'
 
 // Define the type for API responses
@@ -156,8 +156,8 @@ const imageIds = ref<string[]>([])
 const comments = ref<string[]>([])
 const uploadError = ref<string | null>(null)
 const uploadSuccess = ref(false)
-const images: string[] = []
-let starRatingTotal = 0
+const images = ref<string[]>([])
+const starRatingTotal = ref<number>(0)
 let response: UserApiResponse
 
 const fetchPassKey = async (): Promise<string | null> => {
@@ -183,19 +183,23 @@ onMounted(async () => {
     user.value = response.data.user
     starRatingAverage.value = response.data.starRatingAverages[pageRef.value - 1] ?? 0
     imageIds.value = response.data.imageIds ?? []
-    starRatingTotal = response.data.starRatingTotals[pageRef.value - 1] ?? 0
+    starRatingTotal.value = response.data.starRatingTotals[pageRef.value - 1] ?? 0
     comments.value = response.data.comments[pageRef.value - 1] ?? []
-    imageIds.value.forEach((v) => {
-      images.push(`/user-photos/${user.value?.id}/id_${v}.webp`)
+    
+    images.value = imageIds.value.map(v => `/user-photos/${user.value?.id}/id_${v}.webp`)
+
+    nextTick(() => {
+      if (carousel.value) {
+        carousel.value.select(1)
+      }
     })
   }
-  carousel.value?.select(1)
 })
 
 watch(pageRef, (newPage) => {
   if (response.error === null && response.data) {
     starRatingAverage.value = response.data.starRatingAverages[newPage - 1] ?? 0
-    starRatingTotal = response.data.starRatingTotals[newPage - 1] ?? 0
+    starRatingTotal.value = response.data.starRatingTotals[newPage - 1] ?? 0
     comments.value = response.data.comments[newPage - 1] ?? []
   }
 })

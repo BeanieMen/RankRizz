@@ -15,7 +15,7 @@ export default defineNuxtConfig({
     },
   },
   cron: {
-    runOnInit: false,
+    runOnInit: true,
     timeZone: 'Asia/Kolkata',
     jobsDir: 'cron',
   },
