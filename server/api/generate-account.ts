@@ -1,5 +1,5 @@
 import { defineEventHandler, readBody, getRequestHeader, setResponseStatus } from 'h3'
-import { UserDatabase, generateRandomString } from '../db/database'
+import { UserDatabase, generateUUID } from '../db/database'
 
 export default defineEventHandler(async (event) => {
   const db = await UserDatabase.getInstance()
@@ -24,8 +24,8 @@ export default defineEventHandler(async (event) => {
     return { error: 'Username is already taken' }
   }
 
-  const passKey = generateRandomString()
-  const id = generateRandomString()
+  const passKey = generateUUID()
+  const id = generateUUID()
   const user = await db.createUser(id, username, passKey)
 
   if (!user) {
@@ -36,5 +36,5 @@ export default defineEventHandler(async (event) => {
   await db.addIpLookup(ipAddress, id)
 
   setResponseStatus(event, 201)
-  return { data: { passKey: passKey, username: username }, error: null }
+  return { data: { passKey: passKey, username: username, id: id }, error: null }
 })

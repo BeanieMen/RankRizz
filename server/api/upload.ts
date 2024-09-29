@@ -7,7 +7,7 @@ import {
   getRequestHeader,
   setResponseStatus,
 } from 'h3'
-import { UserDatabase, generateRandomString } from '../db/database'
+import { UserDatabase, generateUUID } from '../db/database'
 
 export default defineEventHandler(async (event) => {
   const db = await UserDatabase.getInstance()
@@ -16,14 +16,13 @@ export default defineEventHandler(async (event) => {
   const formData = await readFormData(event)
   const userId = formData.get('userId') as string | null
   const imageFile = formData.get('image') as File | null
-
   if (!userId || !imageFile) {
     setResponseStatus(event, 400)
     return { error: 'User ID and image file are required' }
   }
 
   const uploadPath = path.join(process.cwd(), 'user-photos', userId)
-  const uploadedImageId = generateRandomString()
+  const uploadedImageId = generateUUID()
   const filename = `id_${uploadedImageId}.webp`
   const filePath = path.join(uploadPath, filename)
   try {
