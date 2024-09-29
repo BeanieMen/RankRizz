@@ -185,7 +185,7 @@ onMounted(async () => {
     imageIds.value = response.data.imageIds ?? []
     starRatingTotal.value = response.data.starRatingTotals[pageRef.value - 1] ?? 0
     comments.value = response.data.comments[pageRef.value - 1] ?? []
-    
+
     images.value = imageIds.value.map(v => `/user-photos/${user.value?.id}/id_${v}.webp`)
 
     nextTick(() => {

@@ -9,8 +9,7 @@ describe('API Routes', async () => {
     build: false,
   })
 
-  let db: UserDatabase
-  db = await UserDatabase.getInstance()
+  const db = await UserDatabase.getInstance()
 
   beforeEach(async () => {
     await db.resetDatabase()

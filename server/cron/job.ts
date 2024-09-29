@@ -26,13 +26,15 @@ export default defineCronHandler(
           const folderPath = path.join(directoryPath, folder.name)
           await fs.rm(folderPath, { recursive: true, force: true })
           console.log(`Deleted folder: ${folderPath}`)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Error processing folder ${folder.name}:`, error)
         }
       }))
 
       console.log('All folders in /public/user-photos have been processed.')
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Error handling directory /public/user-photos:', error)
     }
   },
